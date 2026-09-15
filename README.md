@@ -28,6 +28,14 @@ Start with explicit position and velocity. Images and learned latent states can 
 
 Current repository: `cuboid_translation_x/cuboid_setting.py` defines geometry and a static display; `physics.py` contains a candidate analytical stopping-distance calculation; `simulation.py` is a placeholder. There is no verified time-stepped simulator, controller, or trained model yet. The analytical expression needs review before it can serve as a reference, especially its sliding-friction choice, acceleration contribution, and coasting-term units.
 
+## Crucial future exploration — Language and world models
+
+Sariel has chosen language understanding as a crucial future vertical exploration direction: build toward a world model that can use human-language descriptions or instructions alongside physical state information to predict motion. Curiosity and the appeal of this capability are part of the motivation.
+
+The first transmodel focuses on numerical motion prediction. That provides a foundation for later exploring how language connects to physical actions and predicted outcomes, for example interpreting “give the cuboid a gentle push.” Such phrases need context or explicit conventions to determine quantities such as force, direction, and duration.
+
+Keep open both connecting a trained language component to the numerical predictor and training a predictor that directly uses a language representation. Choose the approach through future experiments; the architecture is not decided yet. Evaluate whether the system interprets instructions correctly and predicts the resulting motion accurately, including on unfamiliar wording. Language understanding and physical prediction are distinct capabilities to develop and test together.
+
 ## Why this sequence
 
 The central problem is building a predictor and controller whose results we can explain and trust. Mechanics gives us simple cases with independently calculable answers; numerical experiments then expose approximation errors. Learning becomes meaningful once those reference cases and evaluation methods exist.
