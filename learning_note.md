@@ -1,8 +1,8 @@
 # Learning Notes — transmodel
 
-Last updated: 2026-09-15 21:09:01 +08:00 (Asia/Hong_Kong)
+Last updated: 2026-09-17 10:32:13 +08:00 (Asia/Hong_Kong)
 
-These Q&A notes summarize the discussion of `transmodel_learning_guide.pdf`, including Lesson 02, “Define the prediction contract,” Lesson 03 examples, the form of a world model, future language exploration, and the training process in Lesson 09. The timestamp records this revision; update it whenever these notes are revised.
+These Q&A notes summarize the discussion of `transmodel_learning_guide.pdf` and `neuron_network_supplementary.pdf`, including the prediction contract, examples, world models, future language exploration, neural-network layers and activations, and supervised training. The timestamp records this revision; update it whenever these notes are revised.
 
 ## Q: What is my current goal for this project?
 
@@ -273,3 +273,98 @@ Automatic adjustment is not automatic discovery of correct physics. One update m
 Lesson 09, **“How iteration changes the weights” (page 9)**, explains a gradient-descent update, backpropagation versus optimization, batches, epochs, and learning rate. Its section **“Where training lives in your Python project”** describes how reference data, the trainable model, and the training process fit together.
 
 The PDF covers the training process conceptually, without implementation code or a complete script-writing walkthrough. Lesson 11 points to PyTorch learning resources for the later implementation stage. Sariel will continue studying the guide from Lesson 03; the discussion of training does not require jumping ahead to implementation now.
+
+## Session added: 2026-09-17 10:32:13 +08:00 (Asia/Hong_Kong)
+
+These notes capture the follow-up discussion of Lesson 05 and the supplementary PDF on 16–17 September. Sariel is clarifying hidden layers, bias updates, and ReLU. He asked to set aside the full page 3 walkthrough until the first two topics are clear; the later ReLU question is recorded below without resuming that deferred walkthrough. Do not assume these topics are mastered merely because explanations have been provided.
+
+## Q: What is a hidden layer? Is it the part that performs calculations?
+
+**A:** A layer is a stage of computation within one prediction. In this feedforward network, a hidden layer contains several neurons that calculate intermediate values between the supplied inputs and final outputs. The output layer also performs calculations; computation is not exclusive to hidden layers.
+
+The example has three input values, four hidden neurons, and two outputs. Each hidden neuron receives all three inputs, applies its own weights and bias, and then applies an activation function. Each output combines all four hidden values using its own weights and bias.
+
+“Hidden” means intermediate, not inaccessible. We can inspect its calculated values, such as:
+
+\[
+h=(0.7,0,0.6,0).
+\]
+
+We supply reference labels for the final motion predictions, but normally no “correct hidden-neuron value.” Hidden values are recalculated for each input. They are not additional measurements or trainable parameters.
+
+## Q: Why have four neurons when all receive the same inputs? Do they calculate four target values?
+
+**A:** The four hidden neurons calculate four intermediate responses, not four targets. The example still has only two prediction targets: future position and future velocity. The neurons receive the same inputs but use different weights and biases, so they can respond differently.
+
+For an illustrative pair receiving scaled velocity and force:
+
+\[
+h_1=\operatorname{ReLU}(z_v+z_F),\qquad
+h_2=\operatorname{ReLU}(z_v-z_F).
+\]
+
+At \(z_v=1\) and \(z_F=1\), their outputs are 2 and 0. These are toy calculations, not physical laws.
+
+The output layer combines different responses to represent relationships that one response cannot express. This flexibility is useful when motion behaves differently around rest, positive and negative sliding, and stopping. Training adjusts the neurons together according to their combined prediction error. We do not normally assign one neuron to “friction” and another to “stopping”; their learned roles need not have simple physical meanings.
+
+Four neurons are an illustrative architecture choice, not a requirement. More neurons increase representational capacity but do not automatically improve predictions. If neurons performed identical calculations, they would not provide the distinct responses this explanation relies on.
+
+| Quantity | What determines its count? |
+|---|---|
+| Input values | The information supplied to the model |
+| Hidden neurons | An architecture choice |
+| Output values | The quantities to predict |
+
+## Q: Where does a neuron's bias come from? Is it initially random and then adjusted using the loss?
+
+**A:** A bias needs an initial value, but it does not have to be random. Common choices include zero or small random values, depending on the layer and initialization method. Libraries provide defaults. The supplement's bias of -0.1 was deliberately chosen for easy arithmetic; it was neither trained nor measured from the physical system.
+
+During a prediction, the bias stays fixed. During training, the loss measures final prediction error, backpropagation calculates its derivative with respect to the bias, and the optimizer updates the bias. For ordinary gradient descent:
+
+\[
+b_{\text{new}}=b_{\text{old}}-\eta\frac{\partial L}{\partial b}.
+\]
+
+Biases and weights are both trainable parameters. After training, ordinary prediction uses their learned values without changing them.
+
+## Q: Do we use the same loss function to adjust biases and weights? Why?
+
+**A:** Yes. In our setup, one overall loss measures errors in the final motion predictions. Both weights and biases affect those predictions, so the same objective provides feedback to both. Each parameter has its own derivative, and therefore can receive a different update.
+
+For a simple model and squared-error loss:
+
+\[
+\widehat y=wu+b,\qquad L=(\widehat y-y)^2,
+\]
+
+the derivatives are:
+
+\[
+\frac{\partial L}{\partial w}=2(\widehat y-y)u,
+\qquad
+\frac{\partial L}{\partial b}=2(\widehat y-y).
+\]
+
+Changing the weight changes its contribution in proportion to the input \(u\). Changing the bias adds an offset directly. This explains why the updates differ even though they use the same loss. In a full network, backpropagation follows the connected calculations to obtain each parameter's derivative; hidden neurons do not need separate labels or separate losses.
+
+## Q: Why does ReLU keep positive values and replace negative values with zero? Is it because the cuboid can only move forward or remain still?
+
+**A:** No. ReLU is a chosen mathematical activation, defined by:
+
+\[
+h=\max(0,q).
+\]
+
+Here, \(q\) is an internal weighted sum, not the cuboid's velocity or displacement. The rule introduces a nonlinear bend: a neuron is inactive in one input region and responds in another. Combining such responses allows richer functions than a single global affine mapping. ReLU is one activation choice, not a physical law or the only way to introduce nonlinearity.
+
+If \(q=-0.5\), its ReLU output is zero. This says that one neuron contributes zero for this input; it does not say the cuboid cannot move backward or that the cuboid is at rest.
+
+Nonnegative hidden values can still produce negative final predictions because output weights and biases can be negative. For a toy output calculation:
+
+\[
+\widehat v_{\text{next}}=-2h_1+0.5h_2,
+\]
+
+hidden values \(h_1=1\) and \(h_2=0\) produce a negative output of -2, interpreted according to the chosen output scale.
+
+Our proposed network uses ReLU in the hidden layer and unrestricted linear outputs. Putting ReLU directly on the final velocity output would forbid negative velocity predictions, which would be inappropriate when backward motion is allowed. Any forward-only behavior in the current positive-push experiment comes from its initial conditions and allowed forces, not from the reason for choosing ReLU.
