@@ -25,7 +25,7 @@ class Cuboid:
 
 # each parameter here is written as Cuboid.{parameter name}
 if __name__ == "__main__":
-    cuboid = Cuboid(Lx=0.20, Ly=0.10, Lz=0.10, m=2.0, position=np.array([0.0, 0.0, 0.05]), orientation=np.eye(3))
+    cuboid = Cuboid(Lx=0.20, Ly=0.10, Lz=0.10, m=1.0, position=np.array([0.0, 0.0, 0.05]), orientation=np.eye(3))
     print(f"Cuboid dimensions: {cuboid.Lx} m x {cuboid.Ly} m x {cuboid.Lz} m")
     print(f"Cuboid mass:{cuboid.m} kg")
     world_vertices = cuboid.local_vertices @ cuboid.orientation.T + cuboid.position
