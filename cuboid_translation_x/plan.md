@@ -14,7 +14,11 @@ Complete Phase One of the [parent learning plan](../README.md): build a verified
 - Use ideal static and kinetic friction, ignoring air resistance and contact deformation.
 - The analytical calculation requires positive mass and kinetic friction, nonnegative push duration, and static friction at least as large as kinetic friction.
 
-## 1. Verify and connect one experiment — immediate next task
+## Current priority — transmodel exploration
+
+As of 2026-09-19, the active learning task is the neural network and its one-step accuracy, followed by comparing repeated prediction with and without reference-state feedback. Follow the [Transmodel Exploration Plan](../transmodel_exploration_plan.md) for the full sequence and loss evaluation. The physics milestones below remain prerequisites and supporting work; animation and a feedback controller need not precede model training.
+
+## 1. Verify and connect one experiment
 
 First explain the resting, pushing-while-sliding, and coasting stages. Independently derive the displacement and check each term's units. Review which friction coefficient applies during sliding, the displacement associated with constant acceleration, and the grouping of the coasting expression. The current function must pass these checks before serving as a reference.
 
@@ -52,7 +56,7 @@ Keep the experiment settings, SI units, assumptions, numerical tolerances, and r
 
 Once motion updates are verified, record time, state, action, next state, time step, and physical parameters for reproducible experiments and potential later world-model datasets. No learned model is needed to complete this phase.
 
-Continue to the parent plan's Phase Two by training a dedicated translation world model. Its first task is to predict next position and velocity from current position, velocity, and applied force over a fixed interval. Keep mass and friction fixed in the simulator; friction need not be a model input or output. Prescribed pushes can supply training data without a policy agent. Friction estimation is optional; rotation follows in Phase Three.
+Continue to the parent plan's Phase Two by training a dedicated translation world model. Its first task is to predict displacement and final velocity from current velocity and applied force over a fixed interval, tracking absolute position externally. Keep mass and friction fixed in the simulator; friction need not be a model input or output. Prescribed pushes can supply training data without a policy agent. Friction estimation is optional; rotation follows in Phase Three.
 
 ## Optional later extension — reinforcement learning
 

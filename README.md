@@ -66,7 +66,9 @@ World-model role: no learned dynamics yet. Learn what state, action, and predict
 
 ### Phase Two — Train a translation world model
 
-Train a dedicated learned predictor for the verified one-dimensional task before introducing rotation. Keep the reference simulator and put the learned model alongside it. The initial prediction task is current position, velocity, and applied force to position and velocity one fixed time interval later.
+Train a dedicated learned predictor for the verified one-dimensional task before introducing rotation. Keep the reference simulator and put the learned model alongside it. The initial transmodel takes current signed velocity and applied force and predicts displacement and final velocity over one fixed interval. Track absolute position externally on the uniform floor.
+
+The [Transmodel Exploration Plan](transmodel_exploration_plan.md) details the current sequence: qualify one-step predictions, compare losses using common task metrics, then test repeated prediction with and without reference-state feedback. Verified physics transitions are prerequisites for training; completing animation or a controller first is not required.
 
 Keep mass and static/kinetic friction coefficients fixed across the first dataset. Friction remains in the simulator but is not an input to the learned model; the model learns its effect on motion without needing to output a friction coefficient. Collect examples using prescribed pushes; no policy agent is required. Estimating friction through known equations is an optional comparison, not a prerequisite.
 
@@ -117,8 +119,8 @@ Exit evidence: a reproducible validation package showing which requirements pass
 
 ## Current learning milestone
 
-Phase One, milestone 1: verify the analytical push-and-coast experiment. The focused guide is [Cuboid Translation Along X — Next Steps](cuboid_translation_x/plan.md).
+As of 2026-09-19, the current learning task is understanding and training transmodel for acceptable one-step accuracy, followed by the controlled state-feedback experiment. Follow the [Transmodel Exploration Plan](transmodel_exploration_plan.md), including its loss-comparison method and completion evidence.
 
-First challenge: explain which friction law applies before and after sliding starts, then check that each contribution to stopping distance has units of length. Share the reasoning and a hand-calculated example before reviewing the Python attempt.
+The [Cuboid Translation Along X guide](cuboid_translation_x/plan.md) retains the physics prerequisites. A verified arbitrary-state transition function is still required before generating trustworthy training labels; the learning focus does not mean this implementation is complete.
 
-The tutor should offer conceptual hints and review that attempt without implementing a correction. Each milestone ends with a small experiment and a short explanation of what works, what fails, and why.
+The tutor offers conceptual hints and reviews Sariel's implementation without writing it. Each milestone ends with a small experiment and a short explanation of what works, what fails, and why.

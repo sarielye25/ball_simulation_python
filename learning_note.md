@@ -1,8 +1,8 @@
 # Learning Notes — transmodel
 
-Last updated: 2026-09-17 10:32:13 +08:00 (Asia/Hong_Kong)
+Last updated: 2026-09-17 17:52:03 +08:00 (Asia/Hong_Kong)
 
-These Q&A notes summarize the discussion of `transmodel_learning_guide.pdf` and `neuron_network_supplementary.pdf`, including the prediction contract, examples, world models, future language exploration, neural-network layers and activations, and supervised training. The timestamp records this revision; update it whenever these notes are revised.
+These Q&A notes summarize the discussion of `transmodel_learning_guide.pdf`, `neuron_network_supplementary.pdf`, and `loss_function_supplementary.pdf`, including the prediction contract, examples, world models, future language exploration, neural-network layers and activations, supervised training, and loss-function terminology. The timestamp records this revision; update it whenever these notes are revised.
 
 ## Q: What is my current goal for this project?
 
@@ -368,3 +368,248 @@ Nonnegative hidden values can still produce negative final predictions because o
 hidden values \(h_1=1\) and \(h_2=0\) produce a negative output of -2, interpreted according to the chosen output scale.
 
 Our proposed network uses ReLU in the hidden layer and unrestricted linear outputs. Putting ReLU directly on the final velocity output would forbid negative velocity predictions, which would be inappropriate when backward motion is allowed. Any forward-only behavior in the current positive-push experiment comes from its initial conditions and allowed forces, not from the reason for choosing ReLU.
+
+## Session added: 2026-09-17 16:56:57 +08:00 (Asia/Hong_Kong)
+
+Sariel is studying page 2 of `loss_function_supplementary.pdf`. This discussion exposed a terminology problem: saying squared loss “amplifies larger errors” can sound as though the gradient or weight adjustment must also be quadratic. Sariel understood the calculation; the unclear meaning of “amplification” caused the confusion. Keep loss values, gradients, and update sizes distinct when explaining this topic.
+
+## Q: What does “The loss tells you how your chosen objective penalizes the errors” mean?
+
+**A:** The **chosen objective** is the mathematical goal selected for training (选定的优化目标), such as minimizing average squared prediction error. To **penalize an error** means to assign it a numerical cost (给错误赋予数值上的代价), not to literally punish the model.
+
+In plain English: **“The loss measures how bad the model's mistakes are, according to the scoring rule you chose.”** Absolute error and squared error are different scoring rules, so they can prefer different compromises between mistakes.
+
+## Q: Does squaring the error require compensation when adjusting weights?
+
+**A:** No separate compensation step is needed. Let the signed error be \(e=\widehat y-y\). For squared loss and ordinary gradient descent:
+
+\[
+L=e^2,\qquad
+\frac{\partial L}{\partial\widehat y}=2e,\qquad
+\frac{\partial L}{\partial w}=2e\frac{\partial\widehat y}{\partial w},\qquad
+w_{\text{new}}=w_{\text{old}}-\eta\frac{\partial L}{\partial w}.
+\]
+
+The **loss value** scores the mistake. The **gradient** describes the local slope. The **learning rate** \(\eta\) (eta, 学习率) scales the parameter update. Training does not directly subtract the loss value from a weight.
+
+Differentiation gives the slope of the chosen loss; it does not undo the square or compensate for an unwanted effect. Using \(\tfrac12 e^2\) merely removes the factor of 2 from the derivative. The learning rate does not need to increase when the error increases: with the same learning rate, a larger gradient already produces a larger ordinary gradient-descent step.
+
+## Q: If the gradient is only at “e-level,” what exactly is amplified?
+
+**A:** Sariel's informal “e-level” means **linear in the error**, rather than quadratic. That correctly describes the gradient of squared loss with respect to the prediction. The word “amplification” must identify which quantity is being compared:
+
+| Quantity | When error magnitude becomes ten times larger |
+|---|---|
+| Squared-loss value, \(e^2\) | Becomes 100 times larger |
+| Prediction-gradient magnitude, \(2|e|\) | Becomes ten times larger |
+| Individual weight-update magnitude in ordinary gradient descent | Becomes ten times larger if the learning rate and prediction sensitivity to that weight are the same |
+
+**Squared loss does not make the gradient quadratic.** If “amplification” means a tenfold error creates a more-than-tenfold prediction gradient, squared loss does not provide that behavior. Earlier wording that suggested otherwise was ambiguous.
+
+The useful comparison is with absolute loss. For nonzero errors, \(L=|e|\) has a prediction gradient of +1 or -1: its magnitude is constant. Squared loss has prediction gradient \(2e\): its magnitude grows with error size. Thus larger errors exert a stronger corrective push than smaller errors under squared loss, whereas absolute loss gives them equal push magnitudes at the prediction level. At zero, absolute loss has a corner and no ordinary derivative.
+
+Squaring also does not always increase a numerical value: \(0.2^2=0.04\). The precise claim is that squared loss gives larger errors disproportionately greater **cost relative to smaller errors**.
+
+## Q: Does a linear gradient mean squaring did not change the gradient?
+
+**A:** No. “Linear” does not mean “unchanged.” The choice of loss determines its gradient:
+
+| Loss | Gradient with respect to prediction | Consequence |
+|---|---|---|
+| Signed error, \(e\) | \(1\) | Minimizing it keeps pushing the prediction downward, even when it is already too low; opposite signed errors can cancel in a sum |
+| Absolute error, \(|e|\) | \(\operatorname{sign}(e)\), for nonzero error | Correct direction, constant push magnitude |
+| Squared error, \(e^2\) | \(2e\) | Correct direction, push magnitude proportional to error |
+
+If we invented the rule “apply a corrective push proportional to prediction error,” we would rediscover the prediction gradient of squared loss, up to a constant factor. The loss states the mathematical goal served by that rule. Actual weight gradients also include how the weight affects the prediction; contributions from multiple examples can reinforce or cancel one another.
+
+## Q: Does choosing squared loss change the learned answer, or only the training steps?
+
+**A:** It can change the learned answer because it changes the preferred compromise when a model cannot satisfy every example.
+
+Suppose a model must output one shared prediction for three equally weighted targets: **0, 0, and 9**.
+
+| Shared prediction | Total squared loss | Total absolute loss |
+|---|---|---|
+| 0 | \(0+0+81=81\) | \(0+0+9=9\) |
+| 3 | \(9+9+36=54\) | \(3+3+6=12\) |
+
+Squared loss is minimized at **3, the mean**. Absolute loss is minimized at **0, the median**. Using averages instead of totals leaves these minimizers unchanged.
+
+Under squared loss, reducing the large error on the target 9 is worth introducing smaller errors on the two zeros. At prediction 3, the prediction-gradient contributions are \(6,6,-12\), which sum to zero. Under absolute loss, each nonzero error supplies a push of equal magnitude, so the two zero targets favor a different compromise.
+
+**Key terminology takeaway:** “Squared loss emphasizes large errors” means quadratic costs and an error-dependent corrective push. It does not mean squared gradients, an automatically increased learning rate, or a separate compensation step. This choice can change what the model learns, not just how far it moves during training.
+
+## Session added: 2026-09-17 17:32:10 +08:00 (Asia/Hong_Kong)
+
+Follow-up discussion of scales, weighting the components of one example's loss, and averaging losses across a batch (including the formula Sariel encountered on page 5). The distinction between changing how an error is measured and changing the actual physical error remains important.
+
+## Q: What does a scale do, and does it enter the gradient?
+
+**A:** Dividing an error by a reference scale with the same units makes the ratio dimensionless. Sariel connected this with dimensional reasoning from equilibrium constants in chemistry. For a position scale of \(s=0.01\,\text{m}\), an error of 1 cm becomes a normalized error of 1, and an error of 5 cm becomes 5.
+
+**Scaling expresses an error relative to a chosen reference size; it does not itself change the prediction or its physical error.** Updating the model's parameters can change the actual error.
+
+For a fixed positive scale and signed error \(e=\widehat y-y\):
+
+\[
+\ell=\left(\frac{e}{s}\right)^2,\qquad
+\frac{\partial\ell}{\partial\widehat y}=\frac{2e}{s^2},\qquad
+\frac{\partial\ell}{\partial w}=\frac{2e}{s^2}\frac{\partial\widehat y}{\partial w}.
+\]
+
+The scale enters through the chain rule: differentiating the square gives \(2e/s\), and differentiating the normalized prediction with respect to the original prediction supplies another factor of \(1/s\).
+
+If the numerical scale is 0.01, the normalized error is 100 times the original numerical error, and the gradient with respect to the original prediction is 10,000 times that of unscaled squared error. This numerical comparison holds the original units and model parameterization fixed. Differentiating with respect to the normalized prediction \(\widehat z=\widehat y/s\) instead gives \(2e/s\); these are derivatives with respect to different coordinates.
+
+No automatic compensation cancels this effect. For a single loss under ordinary gradient descent, multiplying the learning rate by \(s^2\) would cancel the uniform gradient scaling. With several loss components scaled differently, one learning-rate adjustment generally cannot cancel their changed relative influences.
+
+## Q: Are scale and importance the same thing?
+
+**A:** They have different interpretations, but both affect the loss and gradient. For one example, write \(\ell\) (pronounced “ell”) as:
+
+\[
+\ell=
+\lambda_d\left(\frac{\widehat d-d}{s_d}\right)^2+
+\lambda_v\left(\frac{\widehat v-v}{s_v}\right)^2.
+\]
+
+Here, \(d\) is signed displacement, \(v\) is final velocity, the positive scales express reference error sizes in the corresponding units, and the nonnegative coefficients \(\lambda_d,\lambda_v\) express additional priorities. The effective coefficients on the original squared errors are \(\lambda_d/s_d^2\) and \(\lambda_v/s_v^2\).
+
+Thus, saying “scale does not describe importance” is useful as a distinction in purpose, but should not imply that scale has no effect on the training trade-off. A smaller scale increases that component's influence, all else equal.
+
+## Q: What does manually weighting velocity loss more strongly actually do?
+
+**A:** It multiplies velocity's contribution to the parameter gradients. Define \(\ell_d\) and \(\ell_v\) as the two normalized squared errors. For any trainable parameter \(w\):
+
+\[
+\frac{\partial\ell}{\partial w}
+=\lambda_d\frac{\partial\ell_d}{\partial w}
++\lambda_v\frac{\partial\ell_v}{\partial w}.
+\]
+
+The **loss weights** \(\lambda_d,\lambda_v\) are priorities chosen for training; they are distinct from the neural network's trainable weights.
+
+Suppose a shared parameter has a distance-loss gradient of +2 and a velocity-loss gradient of -3. Distance favors decreasing the parameter; velocity favors increasing it.
+
+| Loss weights | Combined gradient | Update with learning rate 0.01 |
+|---|---|---|
+| Both 1 | \(2-3=-1\) | \(+0.01\) |
+| Distance 1, velocity 2 | \(2+2(-3)=-4\) | \(+0.04\) |
+
+Increasing velocity's coefficient strengthens its contribution. This is especially relevant when improving one output worsens another: the loss specifies the preferred compromise. Doubling a coefficient does not guarantee halving the resulting error or making that component dominate, because the underlying gradients also matter.
+
+## Q: Why average the losses within a batch? Is it like observing many examples to see a tendency?
+
+**A:** There are two separate reasons: **combining examples improves the evidence for an update; dividing by their count normalizes its numerical scale.** For a batch of \(B\) examples:
+
+\[
+L=\frac{1}{B}\sum_{i=1}^{B}\ell_i,\qquad
+\nabla_w L=\frac{1}{B}\sum_{i=1}^{B}\nabla_w\ell_i.
+\]
+
+One example's gradient may help that example while hurting others. Combining representative examples can give a less noisy estimate of the gradient across the data. Sariel related this to his reading of Taleb: individual observations vary, while many observations can reveal a tendency. This is a useful intuition, not a guarantee or a precise attribution of a statistical theorem to Taleb.
+
+Averaging does not eliminate variation or guarantee the true tendency. Biased or strongly correlated samples, and rare extreme observations, can still make an average misleading. The familiar reduction in sampling noise relies on assumptions about the samples and their variability; more observations alone do not resolve every problem.
+
+## Q: Why divide by batch size instead of simply summing?
+
+**A:** We want batch size to control how many examples inform an update without automatically multiplying the update size.
+
+Suppose three examples give gradients \(2,4,6\) for one parameter, evaluated at the same current model weights. Duplicate every example within the batch, giving \(2,4,6,2,4,6\). This repeats the same evidence without adding information.
+
+| Quantity | Three entries | Six entries, each original duplicated |
+|---|---|---|
+| Sum of gradients | 12 | 24 |
+| Average gradient | 4 | 4 |
+| Update using the sum, learning rate 0.01 | -0.12 | -0.24 |
+| Update using the average, learning rate 0.01 | -0.04 | -0.04 |
+
+The sum doubles the step merely because the batch has twice as many entries. The average leaves it unchanged. This example compares a single update from each batch, not two sequential updates that recalculate gradients after changing the weights.
+
+For a fixed batch, the sum and average have the same gradient direction; averaging divides the magnitude by \(B\). In ordinary gradient descent, averaging is equivalent to using the sum with a learning rate divided by batch size:
+
+\[
+\eta\left(\frac{1}{B}\sum_i g_i\right)
+=\frac{\eta}{B}\left(\sum_i g_i\right),
+\]
+
+where \(g_i\) is an example's gradient contribution.
+
+**Combining examples addresses dependence on a single observation. Averaging rather than summing removes the automatic factor of batch size from the gradient.** It makes “how many examples we consult” and “how big a step we take” easier to control separately. New examples can still change the average gradient, and changing batch size can change training behavior; averaging does not guarantee identical training runs or remove every need to tune the learning rate.
+
+## Session added: 2026-09-17 17:52:03 +08:00 (Asia/Hong_Kong)
+
+Discussion of Huber loss on page 7 of `loss_function_supplementary.pdf`. Sariel's central takeaway is that Huber reduces the tendency of examples with very large errors to dominate batch loss and training. The precise qualification is that it limits their influence rather than guaranteeing that they can never dominate.
+
+## Q: What does “threshold” mean in Huber loss?
+
+**A:** A **threshold** (阈值／分界值) is a boundary value where a rule changes. Huber's positive threshold \(\delta\), pronounced “delta,” determines where the loss switches from quadratic to linear growth.
+
+Compare the error's magnitude \(|e|\) with the threshold, not its signed value. In this PDF, \(e=(\widehat y-y)/s\) is already a normalized, dimensionless error. With a position scale of 0.01 m and \(\delta=1\), the switch occurs at a physical error magnitude of 1 cm. Both positive and negative errors use the same magnitude rule.
+
+The threshold does not divide acceptable errors from ignored errors. Both sides contribute to the loss.
+
+## Q: What are the Huber rules, explicitly?
+
+**A:** First calculate the normalized error, then check its magnitude:
+
+\[
+H_\delta(e)=
+\begin{cases}
+\frac12 e^2, & |e|\leq\delta,\\[4pt]
+\delta\left(|e|-\frac12\delta\right), & |e|>\delta.
+\end{cases}
+\]
+
+- **At or below the threshold:** use half the squared error.
+- **Above the threshold:** use the linear rule in error magnitude.
+
+For \(\delta=1\), the outer rule simplifies to \(|e|-0.5\):
+
+| Normalized error | Rule | Loss | Gradient with respect to normalized error |
+|---|---|---|---|
+| 0.5 | Quadratic | 0.125 | 0.5 |
+| 1 | At threshold | 0.5 | 1 |
+| 2 | Linear | 1.5 | 1 |
+| -2 | Linear | 1.5 | -1 |
+| 4 | Linear | 3.5 | 1 |
+
+The derivative is:
+
+\[
+H'_\delta(e)=
+\begin{cases}
+e, & |e|\leq\delta,\\[4pt]
+\delta\,\operatorname{sign}(e), & |e|>\delta.
+\end{cases}
+\]
+
+Within the threshold, the corrective push grows with error. Beyond it, the derivative's magnitude stays at \(\delta\), while its sign still indicates the correction direction. The loss itself continues increasing without a fixed upper limit.
+
+The outer formula makes the pieces meet smoothly: at \(e=\delta\), both loss formulas give \(\frac12\delta^2\), and both slopes give \(\delta\). The negative boundary also joins smoothly. A smaller threshold starts limiting the derivative sooner; a larger threshold keeps more errors in the quadratic region.
+
+## Q: How does Huber prevent large errors from dominating a batch?
+
+**A:** More precisely, **Huber reduces the disproportionate influence of very large errors: their loss grows linearly instead of quadratically, and their derivative with respect to normalized error stops growing.**
+
+Keep the notation distinct: \(\ell_i\) is one example's loss, potentially combining displacement and velocity terms; \(L=\frac1B\sum_i\ell_i\) is the batch-average loss. Huber is applied to each error component before combining and averaging. It does not clip the batch average afterward.
+
+For a simple batch with one error component per example, compare normalized errors of 1 and 100:
+
+| Penalty | Loss at error 1 | Loss at error 100 | Derivatives at errors 1 and 100 |
+|---|---|---|---|
+| Half squared error, \(\frac12e^2\) | 0.5 | 5,000 | 1 and 100 |
+| Huber with \(\delta=1\) | 0.5 | 99.5 | 1 and 1 |
+
+Half squared error makes the larger error contribute 10,000 times the loss and 100 times the prediction-error derivative. Huber reduces that loss ratio to 199 and gives equal derivative magnitudes here. Averaging across the batch does not change these relative contributions.
+
+**Important precision:** An extreme error can still dominate the numerical batch loss because Huber's linear tail is unbounded. Huber also does not impose an absolute bound on weight gradients. For one component:
+
+\[
+\frac{\partial H_\delta(e)}{\partial w}
+=H'_\delta(e)\frac1s\frac{\partial\widehat y}{\partial w}.
+\]
+
+The derivative with respect to normalized error is bounded, but scales, loss coefficients, and the prediction's sensitivity to a weight still affect each example's contribution to the parameter update.
+
+This can help with occasional corrupted labels or noisy measurements. For this simulation, first investigate unusually large errors: a rare stopping event may be important physics to learn, rather than bad data to suppress.
