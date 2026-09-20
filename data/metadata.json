@@ -1,0 +1,102 @@
+{
+  "dataset_version": "v1",
+  "seed": 20260920,
+  "total_rows": 10000,
+  "input_columns": [
+    "v0_m_s",
+    "force_N",
+    "duration_s"
+  ],
+  "label_columns": [
+    "displacement_m",
+    "v_final_m_s"
+  ],
+  "units": {
+    "v0_m_s": "m/s",
+    "force_N": "N",
+    "duration_s": "s",
+    "displacement_m": "m",
+    "v_final_m_s": "m/s"
+  },
+  "prediction_contract": {
+    "description": "Signed displacement and final velocity under constant force for the supplied duration.",
+    "force_removal_time": "tr = duration_s",
+    "prediction_time": "tf = duration_s",
+    "coasting_after_force_removal": false,
+    "initial_position": "Displacement is relative to the initial position."
+  },
+  "fixed_parameters": {
+    "mass_kg": 1.0,
+    "gravity_m_s2": 9.81,
+    "mu_s": 0.4,
+    "mu_k": 0.3
+  },
+  "input_ranges": {
+    "v0_m_s": [
+      -10.0,
+      10.0
+    ],
+    "force_N": [
+      -20.0,
+      20.0
+    ],
+    "duration_s": [
+      0.1,
+      1.0
+    ]
+  },
+  "sampling": {
+    "uniform": "Independent uniform draws across all input ranges.",
+    "from_rest": "Exactly zero initial velocity; uniform force and duration.",
+    "zero_force": "Exactly zero force; uniform initial velocity and duration.",
+    "static_threshold": "Rest, with signed force within 0.2 N of either static threshold; uniform duration.",
+    "stopping_boundary": "Sample velocity and duration uniformly; choose nominal stopping time within 5% of duration and derive force; reject out-of-range forces."
+  },
+  "splits": {
+    "train": {
+      "file": "train.csv",
+      "rows": 8000,
+      "sampling_category_counts": {
+        "uniform": 4800,
+        "from_rest": 800,
+        "zero_force": 800,
+        "static_threshold": 800,
+        "stopping_boundary": 800
+      },
+      "sha256": "8b4b4dd1d110d69c10a838082c1cfa9331d97c7f556faa24a66b772aa121a4d5"
+    },
+    "validation": {
+      "file": "validation.csv",
+      "rows": 1000,
+      "sampling_category_counts": {
+        "uniform": 600,
+        "from_rest": 100,
+        "zero_force": 100,
+        "static_threshold": 100,
+        "stopping_boundary": 100
+      },
+      "sha256": "c335faaa5d26af5006637b87ed4b4403eebc166adb78df92cf0e7cabe018796a"
+    },
+    "test": {
+      "file": "test.csv",
+      "rows": 1000,
+      "sampling_category_counts": {
+        "uniform": 600,
+        "from_rest": 100,
+        "zero_force": 100,
+        "static_threshold": 100,
+        "stopping_boundary": 100
+      },
+      "sha256": "5d8c880ca06aa8d6b84cd61f2563e314e49c820a5fc5d0c9dd6575875a2a7769"
+    }
+  },
+  "split_policy": "Independent examples with identical category proportions per split; exact duplicate input tuples are excluded across all splits. No trajectories are sampled.",
+  "normalization": "None. Values retain physical units. Fit any future normalization using only train.csv.",
+  "evaluation_scope": "In-range synthetic examples from the reference physics; not an extrapolation or real-world validation dataset. Keep test.csv unused until final evaluation.",
+  "physics_source": {
+    "file": "physics_formula.py",
+    "function": "motion_cal",
+    "sha256": "851f979da296b2a98344577b94cb318222e3e62f46df65d026d1754af847b394"
+  },
+  "generator_sha256": "5ab764decfb74c20f47ca3d523031baee7079660bf3b856ac9d948b3dde7e3b5"
+}
