@@ -66,14 +66,14 @@ World-model role: no learned dynamics yet. Learn what state, action, and predict
 
 ### Phase Two — Train a translation world model
 
-Train a dedicated learned predictor for the verified one-dimensional task before introducing rotation. Keep the reference simulator and put the learned model alongside it. The initial transmodel takes current signed velocity and applied force and predicts displacement and final velocity over one fixed interval. Track absolute position externally on the uniform floor.
+Train a dedicated learned predictor for the verified one-dimensional task before introducing rotation. Keep the reference simulator and put the learned model alongside it. The current transmodel takes [current signed velocity, applied force, force duration, observation time] and predicts [signed displacement, final velocity]. Apply constant force until the supplied force duration, then zero applied force until observation; friction continues to act. Both times are relative to the start of each example, with 0 <= force duration <= observation time. Track absolute position externally on the uniform floor.
 
-The [Transmodel Exploration Plan](transmodel_exploration_plan.md) details the current sequence: qualify one-step predictions, compare losses using common task metrics, then test repeated prediction with and without reference-state feedback. Verified physics transitions are prerequisites for training; completing animation or a controller first is not required.
+The [Transmodel Exploration Plan](transmodel_exploration_plan.md) details the current sequence: revise the labels for four inputs, qualify the chosen 4 → 32 → 32 → 2 baseline, compare one versus two hidden layers and 16 versus 32 neurons per hidden layer, compare losses using common task metrics, then test repeated prediction with and without reference-state feedback. Verified physics transitions are prerequisites for training; completing animation or a controller first is not required.
 
 Keep mass and static/kinetic friction coefficients fixed across the first dataset. Friction remains in the simulator but is not an input to the learned model; the model learns its effect on motion without needing to output a friction coefficient. Collect examples using prescribed pushes; no policy agent is required. Estimating friction through known equations is an optional comparison, not a prerequisite.
 
 Milestones:
-1. Specify the prediction task, state, action interval, fixed parameters, and operating range. Collect trajectories covering rest, motion, stopping, and varied actions. Hold each applied force constant over the prediction interval for the first experiment.
+1. Specify the prediction task, state, force duration, observation time, fixed parameters, and operating range. Collect examples covering rest, motion, stopping, and varied actions, including observation after force removal. Hold each applied force constant during its push, then set applied force to zero for the remaining observation interval.
 2. Split data by complete trajectories or experiment conditions into training, validation, and untouched test sets; avoid leakage through neighboring transitions. Keep extrapolation tests separate from in-range tests.
 3. Establish simple prediction baselines, including unchanged-state and constant-velocity prediction, and retain the verified physics reference. Train a small state-transition model to predict the observed next state from state and action.
 4. Measure one-step and repeated-rollout errors in position and velocity, with units and specified horizons. Inspect stopping behavior, physical consistency, and failures outside the training range.
@@ -121,7 +121,7 @@ Exit evidence: a reproducible validation package showing which requirements pass
 
 The generated dataset is stored in the repository-root `labels/` directory. See the [dataset README](labels/README.md) for file names, the prediction contract, and regeneration instructions.
 
-As of 2026-09-19, the current learning task is understanding and training transmodel for acceptable one-step accuracy, followed by the controlled state-feedback experiment. Follow the [Transmodel Exploration Plan](transmodel_exploration_plan.md), including its loss-comparison method and completion evidence.
+As of 2026-09-21, the four-input [v2 labels](labels/v2/README.md) are available with separate force-duration and observation-time columns. The original v1 dataset remains preserved. The current learning task is training the chosen 4 → 32 → 32 → 2 transmodel for acceptable one-step accuracy. Next come controlled comparisons of hidden-layer count and width, loss choices, and state feedback. Follow the [Transmodel Exploration Plan](transmodel_exploration_plan.md) for experiment controls and completion evidence.
 
 The [Cuboid Translation Along X guide](cuboid_translation_x/plan.md) retains the physics prerequisites. A verified arbitrary-state transition function is still required before generating trustworthy training labels; the learning focus does not mean this implementation is complete.
 
