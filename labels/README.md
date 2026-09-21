@@ -2,6 +2,8 @@
 
 10,000 synthetic examples: 8,000 training, 1,000 validation, 1,000 test.
 
+The dataset is stored in the repository-root `labels/` directory: `train.csv`, `validation.csv`, `test.csv`, and `metadata.json`.
+
 Inputs, in order: `v0_m_s`, `force_N`, `duration_s`.
 Labels, in order: `displacement_m`, `v_final_m_s`.
 The physics function returns velocity first; the generator deliberately reorders its outputs to match the cuboid guide.
@@ -13,9 +15,9 @@ Initial velocity ranges from -10 to 10 m/s; force ranges from -20 to 20 N. These
 From the repository root, regenerate with:
 
 ```powershell
-python cuboid_translation_x/label_preparation.py
+python cuboid_translation_x/label_preparation.py --output-dir labels
 ```
 
-The command overwrites the generated CSV and metadata files. Use `--output-dir` for a separate dataset and `--seed` to change the random seed. With unchanged code and the same Python runtime and seed, generation is reproducible. `metadata.json` records parameters, sampling details, column order, and source/data hashes.
+The command overwrites the generated CSV and metadata files in `labels/`. The explicit `--output-dir labels` is required because the generator's default remains `data/cuboid_translation_x/v1`. Choose another `--output-dir` for a separate dataset and use `--seed` to change the random seed. With unchanged code and the same Python runtime and seed, generation is reproducible. `metadata.json` records parameters, sampling details, column order, and source/data hashes.
 
 All values are unnormalized and stored in physical units. Fit normalization on training data only. Reserve the test split for final evaluation. These labels measure agreement with the supplied physics, not accuracy against real experiments. No training code is included.

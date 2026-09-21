@@ -119,6 +119,8 @@ Exit evidence: a reproducible validation package showing which requirements pass
 
 ## Current learning milestone
 
+The generated dataset is stored in the repository-root `labels/` directory. See the [dataset README](labels/README.md) for file names, the prediction contract, and regeneration instructions.
+
 As of 2026-09-19, the current learning task is understanding and training transmodel for acceptable one-step accuracy, followed by the controlled state-feedback experiment. Follow the [Transmodel Exploration Plan](transmodel_exploration_plan.md), including its loss-comparison method and completion evidence.
 
 The [Cuboid Translation Along X guide](cuboid_translation_x/plan.md) retains the physics prerequisites. A verified arbitrary-state transition function is still required before generating trustworthy training labels; the learning focus does not mean this implementation is complete.

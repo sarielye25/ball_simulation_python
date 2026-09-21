@@ -15,4 +15,4 @@ The input variables are (v_0, F, t_f), the output is (d, v_f)
 ## Preparation of labels
 Labels should cover all possible situations. 
 
-They are produced by label_preparation.py.
+They are produced by `label_preparation.py` and stored in the repository-root `labels/` directory. See the [dataset README](../labels/README.md) for the train, validation, and test splits and the regeneration command.
