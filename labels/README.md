@@ -1,25 +1,24 @@
-# Cuboid labels v1
+# Cuboid labels v2 — four-input push and coast
 
-Status as of 2026-09-21: these files describe the preserved three-input dataset. The new [four-input v2 dataset](v2/README.md) is available in `labels/v2/`, with separate force duration and observation time and observations after force removal. Use v2 for the current network. The original generator and the command below still generate v1.
+10,000 synthetic examples generated using `physics_formula.motion_cal`: 8,000 training, 1,000 validation, and 1,000 reserved test examples.
 
-10,000 synthetic examples: 8,000 training, 1,000 validation, 1,000 test.
+Inputs in order: `v0_m_s`, `force_N`, `force_duration_s`, `observation_time_s`.
+Targets in order: `displacement_m`, `v_final_m_s`.
 
-The dataset is stored in the repository-root `labels/` directory: `train.csv`, `validation.csv`, `test.csv`, and `metadata.json`.
+These four inputs match the current network. The physics function returns velocity first; the generator reorders the targets to displacement first. Values are unnormalized; fit normalization using training data only.
 
-Inputs, in order: `v0_m_s`, `force_N`, `duration_s`.
-Labels, in order: `displacement_m`, `v_final_m_s`.
-The physics function returns velocity first; the generator deliberately reorders its outputs to match the cuboid guide.
+Apply constant force from time zero until `force_duration_s`, then zero applied force until `observation_time_s`. Friction acts throughout. Times are relative to the start of the example. Mass is 1 kg, gravity is 9.81 m/s², static friction coefficient is 0.4, and kinetic friction coefficient is 0.3.
 
-Force is constant throughout the supplied duration (0.1–1 s), and prediction ends at that time: `tr = tf = duration_s`. This follows the previous three-input variable-duration contract. There is no additional coast interval. Mass is 1 kg; friction and gravity come from `physics_formula.py`.
+Initial velocity ranges from -10 to 10 m/s; force ranges from -20 to 20 N; push duration ranges from 0.1 to 1 s. Time after removal ranges from 0 to 2 s, so observation time ranges from 0.1 to 3 s subject to `t1 <= t <= t1 + 2`. The two-second coast range is an initial experimental choice, not a physical limit or a guarantee that every example has stopped.
 
-Initial velocity ranges from -10 to 10 m/s; force ranges from -20 to 20 N. These are initial experimental choices, not validated limits for physical hardware. Each split contains 60% broad uniform samples and 10% each of rest, zero force, near static-threshold, and near stopping-time samples. Sampling categories describe how inputs are chosen, not mutually exclusive physical outcomes. Exact duplicate inputs are excluded across all splits.
+Each split contains 40% broad uniform samples; 10% each from rest, zero force, near static threshold, near stopping during the push, and exactly at force removal; 5% near stopping during coast; and 5% at rest after coast. Categories describe sampling and may overlap in physical outcome. Across all splits, 1,000 examples have `t = t1` and 9,000 have `t > t1`. Repeated `(v0, F, t1)` conditions are excluded across and within splits, preventing the same push from appearing at different observation times in different splits.
 
-From the repository root, regenerate with:
+From the repository root, generate another copy in a new directory:
 
 ```powershell
-python cuboid_translation_x/label_preparation.py --output-dir labels
+python cuboid_translation_x/label_preparation_v2.py --output-dir labels/v2_regenerated
 ```
 
-The command overwrites the generated CSV and metadata files in `labels/`. The explicit `--output-dir labels` is required because the generator's default remains `data/cuboid_translation_x/v1`. Choose another `--output-dir` for a separate dataset and use `--seed` to change the random seed. With unchanged code and the same Python runtime and seed, generation is reproducible. `metadata.json` records parameters, sampling details, column order, and source/data hashes.
+The default destination is `labels/v2`. Existing dataset files are never overwritten. The default seed is 20260921; use `--seed` for a different sample. The generator reuses the original generator's input sampling and calls the existing physics function with separate force-removal and observation times. `metadata.json` records the contract, sampling, split hashes, and all three source hashes. The original v1 files remain in `labels/`.
 
-All values are unnormalized and stored in physical units. Fit normalization on training data only. Reserve the test split for final evaluation. These labels measure agreement with the supplied physics, not accuracy against real experiments. No training code is included.
+Generation checks passed for finite values, ranges, target ordering, all row targets against the physics function, signed symmetry, condition separation, byte-identical regeneration, and overwrite protection. Independent analytical spot checks covered rest below threshold, an accelerating push, partial coast, complete coast to rest, and negative-direction motion. These checks are not exhaustive physical validation. The dataset measures agreement with this reference model, not with real hardware. Reserve test data for final model evaluation.

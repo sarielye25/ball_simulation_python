@@ -1,11 +1,12 @@
 {
-  "dataset_version": "v1",
-  "seed": 20260920,
+  "dataset_version": "v2",
+  "seed": 20260921,
   "total_rows": 10000,
   "input_columns": [
     "v0_m_s",
     "force_N",
-    "duration_s"
+    "force_duration_s",
+    "observation_time_s"
   ],
   "label_columns": [
     "displacement_m",
@@ -14,15 +15,16 @@
   "units": {
     "v0_m_s": "m/s",
     "force_N": "N",
-    "duration_s": "s",
+    "force_duration_s": "s",
+    "observation_time_s": "s",
     "displacement_m": "m",
     "v_final_m_s": "m/s"
   },
   "prediction_contract": {
-    "description": "Signed displacement and final velocity under constant force for the supplied duration.",
-    "force_removal_time": "tr = duration_s",
-    "prediction_time": "tf = duration_s",
-    "coasting_after_force_removal": false,
+    "description": "Constant force until t1, then zero applied force until t; friction acts throughout.",
+    "force_removal_time": "t1 = force_duration_s",
+    "prediction_time": "t = observation_time_s",
+    "time_constraint": "0.1 <= t1 <= 1; t1 <= t <= t1 + 2",
     "initial_position": "Displacement is relative to the initial position."
   },
   "fixed_parameters": {
@@ -40,63 +42,91 @@
       -20.0,
       20.0
     ],
-    "duration_s": [
+    "force_duration_s": [
       0.1,
       1.0
+    ],
+    "observation_time_s": [
+      0.1,
+      3.0
+    ],
+    "time_after_force_removal_s": [
+      0.0,
+      2.0
     ]
   },
   "sampling": {
-    "uniform": "Independent uniform draws across all input ranges.",
-    "from_rest": "Exactly zero initial velocity; uniform force and duration.",
-    "zero_force": "Exactly zero force; uniform initial velocity and duration.",
-    "static_threshold": "Rest, with signed force within 0.2 N of either static threshold; uniform duration.",
-    "stopping_boundary": "Sample velocity and duration uniformly; choose nominal stopping time within 5% of duration and derive force; reject out-of-range forces."
+    "uniform": "Uniform velocity, force, push duration, and time after removal; observation time is their time sum.",
+    "from_rest": "Initial velocity zero; otherwise uniform.",
+    "zero_force": "Applied force zero; otherwise uniform.",
+    "static_threshold": "Initial rest; force within 0.2 N of either static threshold.",
+    "stopping_boundary": "Nominal stopping time during the push within 5% of push duration; inherited v1 sampling.",
+    "push_endpoint": "Observation exactly at force removal.",
+    "coast_stopping_boundary": "Nonzero velocity at removal; observation within 5% of analytical coast stopping time, restricted to the time range.",
+    "rest_after_coast": "Nonzero velocity at removal; observation uniformly between coast stopping time and maximum coast duration."
   },
   "splits": {
     "train": {
       "file": "train.csv",
       "rows": 8000,
       "sampling_category_counts": {
-        "uniform": 4800,
+        "uniform": 3200,
         "from_rest": 800,
         "zero_force": 800,
         "static_threshold": 800,
-        "stopping_boundary": 800
+        "stopping_boundary": 800,
+        "push_endpoint": 800,
+        "coast_stopping_boundary": 400,
+        "rest_after_coast": 400
       },
-      "sha256": "8b4b4dd1d110d69c10a838082c1cfa9331d97c7f556faa24a66b772aa121a4d5"
+      "sha256": "be9501e58ba4481b96e95f3b67785f6c3a4bfa6e58df1b56dfece320bc288514"
     },
     "validation": {
       "file": "validation.csv",
       "rows": 1000,
       "sampling_category_counts": {
-        "uniform": 600,
+        "uniform": 400,
         "from_rest": 100,
         "zero_force": 100,
         "static_threshold": 100,
-        "stopping_boundary": 100
+        "stopping_boundary": 100,
+        "push_endpoint": 100,
+        "coast_stopping_boundary": 50,
+        "rest_after_coast": 50
       },
-      "sha256": "c335faaa5d26af5006637b87ed4b4403eebc166adb78df92cf0e7cabe018796a"
+      "sha256": "18b1013fd52580ebfaf124081b59795cc61017fcab5fe9508b70b2e532c626eb"
     },
     "test": {
       "file": "test.csv",
       "rows": 1000,
       "sampling_category_counts": {
-        "uniform": 600,
+        "uniform": 400,
         "from_rest": 100,
         "zero_force": 100,
         "static_threshold": 100,
-        "stopping_boundary": 100
+        "stopping_boundary": 100,
+        "push_endpoint": 100,
+        "coast_stopping_boundary": 50,
+        "rest_after_coast": 50
       },
-      "sha256": "5d8c880ca06aa8d6b84cd61f2563e314e49c820a5fc5d0c9dd6575875a2a7769"
+      "sha256": "aaebe2d49d451557db69c317a6d9214f7e107c8b04cedd87395f60d1f5c9cb79"
     }
   },
-  "split_policy": "Independent examples with identical category proportions per split; exact duplicate input tuples are excluded across all splits. No trajectories are sampled.",
-  "normalization": "None. Values retain physical units. Fit any future normalization using only train.csv.",
-  "evaluation_scope": "In-range synthetic examples from the reference physics; not an extrapolation or real-world validation dataset. Keep test.csv unused until final evaluation.",
-  "physics_source": {
-    "file": "physics_formula.py",
-    "function": "motion_cal",
-    "sha256": "851f979da296b2a98344577b94cb318222e3e62f46df65d026d1754af847b394"
-  },
-  "generator_sha256": "5ab764decfb74c20f47ca3d523031baee7079660bf3b856ac9d948b3dde7e3b5"
+  "split_policy": "Independent conditions, with no repeated (v0, F, t1) across or within splits; no shared trajectories at different observation times.",
+  "normalization": "None; fit normalization on training data only.",
+  "evaluation_scope": "Synthetic reference-physics agreement, not real-world validation. Reserve test data for final evaluation.",
+  "sources": [
+    {
+      "file": "physics_formula.py",
+      "sha256": "851f979da296b2a98344577b94cb318222e3e62f46df65d026d1754af847b394"
+    },
+    {
+      "file": "label_preparation.py",
+      "sha256": "5ab764decfb74c20f47ca3d523031baee7079660bf3b856ac9d948b3dde7e3b5"
+    },
+    {
+      "file": "label_preparation_v2.py",
+      "sha256": "03358b7212d029152c03eaff8ab0b0affd2f9b010fefea4e56297295bfa2fcee"
+    }
+  ]
 }
