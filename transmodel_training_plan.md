@@ -2,6 +2,8 @@
 
 Draft for discussion — 2026-09-23. Sariel implements and runs the code; Sary explains and reviews. No training has been run for this plan.
 
+Validation decision structure agreed on 2026-09-24. A label-based baseline check has been run; neural-network training has not.
+
 Read alongside `transmodel_exploration_plan.md`. The requested `tranmodel_training_plan.md` was not present; this document develops the existing exploration plan without replacing it.
 
 ## 1. Outcome and first principles
@@ -28,32 +30,62 @@ Choices that remain hypotheses:
 
 The goal is an understandable, informative experiment. A complicated training platform is unnecessary for this small model.
 
-## 2. What 0.001 means, and a constraint in this physics model
+## 2. Validation: direction, achievement, and stopping
 
-Interpret the candidate absolute tolerances as displacement error of 0.001 m (1 mm) and velocity error of 0.001 m/s (1 mm/s). These are different physical quantities despite equal numerical values.
+Validation provides evidence for whether to continue training, which checkpoint to keep, and when to stop. The training loss and optimizer update the parameters; validation evaluates the resulting behavior on held-out examples. Check frequency serves these decisions. Checks during the middle of training remain necessary because we cannot know in advance when the ending begins.
 
-For perspective, the existing training targets span approximately −46.46 to 56.97 m and −23.40 to 23.96 m/s. Millimetre-scale error over this domain is demanding; attainment has not been demonstrated.
+### 2.1 Match the measurement to the question
 
-More fundamentally, the reference has a discontinuity at static breakaway. With initial velocity zero, push duration and observation time both 1 s, and positive force:
+| Question | Evidence to record | Limitation |
+|---|---|---|
+| Are predictions getting closer to the reference? | Validation standardized MSE, plus displacement and velocity mean absolute error (MAE) in physical units | An average can conceal worsening cases; standardized MSE weights outputs by training-data variation, not application tolerances. |
+| Are predictions accurate enough? | Joint tolerance pass rate: the proportion satisfying both output tolerances | A pass rate hides how far failures miss the target and how much passing cases improve. |
+| Is improvement widespread or concentrated? | Paired per-example error changes and results by motion condition | The fraction improving alone hides the size of improvements and regressions. |
+| Is further training worthwhile? | Improvement over a meaningful update window, target status, and computation used | A plateau under one setup does not prove an architecture or dataset is inadequate. |
 
-- At F = μs mg = 3.924 N, the implementation returns d = v = 0.
-- As force approaches 3.924 N from above, kinetic acceleration approaches 0.981 m/s², so d approaches 0.4905 m and v approaches 0.981 m/s.
+Use loss to detect progress, tolerances to judge achievement, and grouped errors to expose what averages conceal. A falling loss is evidence of progress under that scoring rule, not proof that every example improves or that the application requirement is met.
 
-A finite ReLU network is continuous in its inputs. It cannot approximate both sides of this jump with uniform error 0.001 over the entire continuous domain. Increasing training time or dataset size cannot remove that mathematical obstruction. A finite held-out set can still pass because it does not test every point arbitrarily close to the boundary.
+### 2.2 Physical tolerances and coverage
 
-Start by measuring performance on the specified sampling distribution, and separately inspect boundary cases. If uniform accuracy across breakaway is eventually essential, reconsider the model representation (for example, an explicit physical regime decision plus regression) or the physical contact model when scientifically justified. These are later experiments, not changes to the initial baseline.
+For each example, define `e_d = |predicted d - reference d|` and `e_v = |predicted v - reference v|`. It passes only when `e_d <= epsilon_d` **and** `e_v <= epsilon_v`. Evaluate all three provisional milestones with the same training objective:
 
-Provisional acceptance definition, pending Sariel's decision:
+| Milestone | Displacement tolerance | Velocity tolerance |
+|---|---:|---:|
+| Coarse | 0.1 m | 0.1 m/s |
+| Intermediate | 0.01 m | 0.01 m/s |
+| Fine | 0.001 m | 0.001 m/s |
 
-For each held-out example define
+These are experimental milestones, not established application requirements. Equal numerical tolerances for different units are a convenience. Labels provide reference answers; they do not determine acceptable errors or required coverage. A candidate coverage is 95% overall and 95% within each main motion group; confirm the chosen milestone and coverage before enabling target-based stopping or declaring success in comparisons.
 
-q = max(|predicted d − d| / εd, |predicted v − v| / εv).
+At every validation check, report standardized MSE; displacement and velocity MAE, 95th-percentile absolute error, and maximum observed error; and joint pass rates at all three milestones. Report group sizes and group pass rates for always-resting cases, cases that move and then stop, and cases still moving at observation. Determine groups from reference behavior, not model predictions; zero final velocity alone cannot distinguish always-resting from moved-then-stopped cases.
 
-An example passes only if q ≤ 1: both errors meet their tolerances on the same example. Report the fraction passing, with **99% joint coverage as a discussion candidate**, not an established requirement. On 1,000 validation examples, this means at least 990 pass; it is not a guarantee of 99% population coverage or worst-case safety.
+Also report a boundary diagnostic group: initially resting inputs with `abs(abs(F) - 3.924 N) <= 0.2 N`. This is a fixed sampling band for analysis, not a physical constant or a reason to relax tolerances. Show its errors and pass rates explicitly, including any shortfall. A successful overall score must not conceal this limitation.
 
-Also report MAE, RMSE, 95th and 99th percentile absolute errors, and maximum observed absolute error separately for d and v, in physical units. Means can hide rare failures; a maximum over a sample is not a maximum over the whole domain. Percentage errors are unsuitable around the many zero targets.
+The reference mapping is discontinuous at breakaway, whereas the current ReLU network is continuous. Finite-set success cannot establish uniformly tiny errors for every possible input near that boundary. Simulator agreement also does not establish real-world or repeated-rollout accuracy.
 
-Keep εd = εv = 0.001 visible even if not reached. Optionally report 0.1 and 0.01 as intermediate milestones; do not silently relax the original target. Final tolerances should follow the intended prediction/control use and rollout horizon.
+### 2.3 Beginning: establish evidence of useful learning
+
+Evaluate the untrained model at update 0 and use the same validation rows at subsequent checks. Look for a sustained decrease in validation loss across several checks, supported by physical errors for both outputs. Compare against simple baselines as learning progresses. A single disappointing check after ten updates is insufficient to reject the run; non-finite values or broken data contracts require immediate investigation.
+
+All examples share model parameters. Ten updates may improve many predictions slightly, reduce a few large mistakes, or cause some examples to pass while others fail. There is no assumed sequence in which training finishes one example before moving to another.
+
+For the early diagnostic, retain per-example errors at updates 0 and 10. Compare each output's fraction of examples improving, the magnitudes of improvements and regressions, and where those changes occur. Use paired comparisons on the same rows, not different random validation batches. If the aggregate story remains unclear, repeat this diagnostic at a later scheduled check. A pass rate can remain zero while predictions improve substantially toward its threshold.
+
+### 2.4 Ending: separate success from stopping
+
+| Outcome | Meaning and action |
+|---|---|
+| Target reached | A saved checkpoint meets the predefined joint tolerances and coverage requirements. Record its actual metrics and group limitations. |
+| Progress stalled | Validation improvement is too small over a predefined window under the current setup. Retain the best observed checkpoint and investigate before changing the setup. This is not accuracy success. |
+| Budget exhausted | The update or time cap is reached without a target-based or plateau-based stop. Report whether progress was continuing; do not label the cap as convergence. |
+
+For the first pilot, retain the fixed 10,000-update budget to observe the curve; record target crossings and possible plateaus without automatically stopping on them. Stop and diagnose numerical or implementation failures separately. Pilot observations will inform any later early-stopping settings.
+
+Before subsequent comparisons, freeze any early-stopping rule: monitored metric, minimum meaningful improvement, patience in optimizer updates, and the earliest update at which plateau stopping is allowed. Patience counts updates since the last qualifying improvement, and stopping can occur only at scheduled validation checks. Do not invent thresholds from one early fluctuation or change them separately for each candidate.
+
+Keep the lowest-validation-MSE checkpoint and the first observed target-passing checkpoint separately. The stopping checkpoint need not be the best checkpoint, and the lowest-MSE checkpoint need not have the highest pass rate. For the pilot's primary comparison, use the lowest-MSE checkpoint and report whether that specific checkpoint meets the target; report time-to-target separately. If a later task requires selecting a target-qualified checkpoint, specify that selection rule before comparisons.
+
+Report whether a target crossing persists at later pilot checks. Repeated checks on the same validation set are not independent confirmations. Freeze architecture, training protocol, and checkpoint selection before evaluating on the reserved test set; report test shortfalls without tuning against that set.
 
 ## 3. The loop, conceptually
 
@@ -71,6 +103,8 @@ The tolerance check belongs to evaluation and stopping decisions. It does not fi
 - Validation influences model selection and stopping, but never supplies training gradients.
 - The test set is reserved until the architecture, training protocol, and checkpoint-selection rule are frozen.
 
+At the start of each epoch, reshuffle the same selected input–label pairs and divide them into new batches. With 8,000 examples and batch size 128, each epoch contains 62 full batches and one final batch of 64, giving 63 updates. Reshuffling changes batch composition and update order, so examples contribute alongside different examples across epochs. It creates varied optimization experiences but does not create new labels, add physical conditions, or increase the number of distinct training examples. Keep every selected training example eligible in every epoch, including examples that currently meet a candidate tolerance.
+
 Use training mode for updates, and evaluation mode plus disabled gradient tracking for evaluation. These are separate concepts in PyTorch, even though this particular network has no dropout or batch normalization.
 
 ## 4. A small initial training recipe
@@ -86,7 +120,7 @@ These are starting settings to test, not claims of optimality.
 | Optimizer | Adam, learning rate 0.001, zero weight decay | A practical starting point for this small regression model. |
 | Batch size | 128, shuffled; retain the final partial batch | Modest computation with multiple examples per update. |
 | Device / precision | CPU and float32 initially | The current requirements use CPU PyTorch; benchmark before adding hardware complexity. |
-| Validation | Before training, then every 100 optimizer updates | Makes progress comparable in updates across dataset sizes. |
+| Validation | Front-loaded schedule: updates 0, 10, 20, 50, and 100; then every 100 updates and at the final update | Initial observation schedule serving the direction and stopping decisions in section 2; intervals are not themselves the objective. |
 | Initial budget | At most 10,000 optimizer updates | A bounded pilot, not a claim that convergence occurs by this point. |
 | Checkpoint | Lowest validation standardized MSE | A smooth, predefined selection rule. Report tolerance metrics at that checkpoint. |
 
@@ -96,7 +130,9 @@ Standard-deviation scaling balances relative variation; it does **not** mean equ
 
 Treat zero or nearly zero feature scales explicitly rather than dividing by zero. Fit normalization on the selected training subset in data-size experiments; using labels outside that subset would invalidate its claimed label budget.
 
-Keep the first pilot's budget fixed for clear curves. If the validation curve is still improving at the cap, report “budget exhausted,” not “converged” or “architecture inadequate.” After the pilot, decide whether a longer budget, a learning-rate reduction, or a common early-stopping rule is warranted before starting comparisons. A plateau rule must specify its metric, minimum improvement, and patience; it is not the same as reaching the target accuracy.
+Follow section 2.4 for termination and checkpoint decisions. After the fixed-budget pilot, decide whether a longer budget, a learning-rate reduction, or a common early-stopping rule is warranted before starting comparisons. A plateau and reaching the target accuracy remain distinct outcomes.
+
+Apply the same front-loaded validation schedule to every candidate in a comparison so each receives the same checkpoint opportunities. The schedule assumes one optimizer update per processed training batch; if gradient accumulation or skipped optimizer steps are introduced later, trigger validation by the optimizer-update counter rather than the batch counter.
 
 Record the first validation check that passes the joint target and its checkpoint separately from the checkpoint with lowest validation MSE. An isolated pass can fluctuate; report whether it persists at subsequent checks. Repeated checks on the same validation set are not independent statistical confirmations.
 
@@ -110,7 +146,9 @@ Sariel builds these parts in order; Sary reviews each milestone.
 4. **Small fixed training subset:** repeatedly fit roughly 32–64 examples. A substantial training-error decrease is a useful implementation check, not evidence of generalization. Do not require perfect fit across a physical discontinuity.
 5. **Baseline run:** train on the 8,000 examples, evaluate on validation, save curves and a reloadable checkpoint. Confirm saved-model predictions reproduce those of the selected checkpoint.
 
-Before training, evaluate the constant-velocity reference prediction d = v0 × t and v = v0 on validation. It is intentionally simple and ignores the push and friction; it provides a useful performance reference. The analytical simulator remains the source reference.
+Before training, evaluate both a zero-output predictor (`d = 0`, `v = 0`) and the constant-velocity prediction (`d = v0 × t`, `v = v0`) on validation using the same metrics as the network. These are simple performance references, not substitutes for the analytical simulator that supplies the labels.
+
+The 2026-09-24 label-based check illustrates why this matters. On the 1,000 validation rows, the zero-output predictor passes velocity alone on 50.6% of cases at 0.1 m/s and 48.1% at 0.001 m/s, but passes both outputs on only 12.1% and 6.7%, respectively, at the matching milestones. Its displacement MAE is approximately 4.57 m and velocity MAE is 2.64 m/s. Many cases end at rest, so an apparently encouraging velocity pass rate can occur without learning. This check involved no neural-network training and did not use the test set.
 
 An operational issue for later data generation: `label_preparation_v2.py` imports `label_preparation.py`, but that source file is absent. The stored CSVs are available; regeneration needs that dependency restored or reviewed first. No repair is part of this planning step.
 
@@ -187,6 +225,8 @@ Use one run directory, a configuration record, a CSV of metrics, and saved check
 
 Record architecture and parameter count; data hashes and subset row identities; random seeds; normalization statistics; optimizer, loss, learning rate and batch size; software versions and device; stopping budget; physical tolerances and coverage rule; update, epoch and exposure counts; elapsed time; validation loss and physical metrics; chosen and first-passing checkpoints; and failure/termination reason.
 
+Include group definitions and counts, per-group pass rates, and the paired early-error diagnostic from section 2.3. If early stopping is enabled, record its metric, minimum improvement, patience, and earliest eligible update. Record target achievement separately from the reason execution ended: a fixed-budget pilot can reach a target and continue to its cap.
+
 Save model weights, model configuration, and preprocessing together. Save optimizer state and random-generator state if exact continuation is required. Aggregate epoch losses by example count so a small final batch is not over-weighted.
 
 Final comparison: error versus distinct labels, error versus updates/time, and a compact table of accuracy, parameter count, and cost. Include difficult-case results separately from overall averages. For repeated predictions, keep force schedules identical, track absolute position externally, and flag states that leave the trained input range; reference-state resets and free rollouts are different evaluation conditions.
@@ -199,4 +239,4 @@ The workflow follows established supervised-learning practice while keeping choi
 - [Scikit-learn: Learning curves](https://scikit-learn.org/stable/modules/learning_curve.html): training and validation performance versus number of training examples, and the bias introduced by tuning on validation.
 - [Google Research: Deep Learning Tuning Playbook](https://github.com/google-research/tuning_playbook): simple initial configurations, scientific versus nuisance hyperparameters, and resource-aware comparisons.
 
-Next discussion: decide whether 0.001 means an average-error requirement or a joint per-example tolerance at a specified coverage. Then Sariel's first implementation milestone is loading one batch and demonstrating the normalization round trip, before writing the full learning cycle.
+Next decision: confirm which joint per-example tolerance milestone and coverage will define target achievement; average loss remains a separate progress and checkpoint-selection measure. Choose numerical plateau-stopping settings after observing the pilot. Sariel's first implementation milestone is loading one batch and demonstrating the normalization round trip, before writing the full learning cycle.

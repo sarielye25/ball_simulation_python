@@ -1,6 +1,6 @@
 # Learning Notes — transmodel
 
-Last updated: 2026-09-17 17:52:03 +08:00 (Asia/Hong_Kong)
+Last updated: 2026-09-23 +08:00 (Asia/Hong_Kong)
 
 These Q&A notes summarize the discussion of `transmodel_learning_guide.pdf`, `neuron_network_supplementary.pdf`, and `loss_function_supplementary.pdf`, including the prediction contract, examples, world models, future language exploration, neural-network layers and activations, supervised training, and loss-function terminology. The timestamp records this revision; update it whenever these notes are revised.
 
@@ -613,3 +613,9 @@ Half squared error makes the larger error contribute 10,000 times the loss and 1
 The derivative with respect to normalized error is bounded, but scales, loss coefficients, and the prediction's sensitivity to a weight still affect each example's contribution to the parameter update.
 
 This can help with occasional corrupted labels or noisy measurements. For this simulation, first investigate unusually large errors: a rare stopping event may be important physics to learn, rather than bad data to suppress.
+
+## Session added: 2026-09-23 +08:00 (Asia/Hong_Kong)
+
+## Q: Why should training cases remain in batch training after they currently pass the error tolerance?
+
+**A:** All cases share the same model parameters. An update based on one batch can improve its cases while making a previously accurate case inaccurate again. Therefore, the baseline will keep every training case eligible for shuffled mini-batches instead of permanently removing cases that currently pass. Each update will use the batch's average differentiable loss; tolerance checks belong to evaluation rather than selecting which cases may train the model.
