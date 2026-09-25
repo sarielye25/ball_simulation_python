@@ -1,7 +1,7 @@
 # Transmodel: first-model training plan
 
 Updated 2026-09-25. Sariel implements; Sary explains and reviews.
-Read the [visual guide](transmodel_training_plan.html) for diagrams and examples, or the
+Read the [visual guide](cuboid_translation_x/first_training_protocol/transmodel_training_plan_updated.html) for diagrams and examples, or the
 [supporting notes](transmodel_training_notes.md) for detailed reasoning.
 
 **Project order: train and understand the first model → demonstrate it with animation → run comparisons.**
@@ -93,8 +93,15 @@ Use full-validation group curves as the main diagnostic, rather than noisy mixed
 Aggregate by sample count, not by averaging batch means; an empty group has count zero and undefined metrics.
 
 At each check, record validation group counts, MSE, joint pass rates for all rulers, and displacement/velocity
-MAE, P95 and maximum error. Also report overall physical errors. Track the overlapping breakaway slice
-`v0 = 0 and abs(abs(F) - 3.924 N) <= 0.2 N`, without a separate acceptance gate.
+MAE, P95 and maximum error. Also report overall physical errors.
+
+**Boundary diagnostic:** fix a validation subset with
+`v0 = 0 and abs(abs(F) - mu_s * m * g) <= breakaway_band_N`, using `breakaway_band_N = 0.2 N`
+(force magnitude 3.724–4.124 N). Keep its row IDs and band fixed. At every scheduled evaluation and
+normal termination, reuse full-validation predictions; log count, standardized MSE and all three joint
+pass rates. Plot these against updates alongside overall validation curves (pass-rate axis 0–100%).
+An empty subset has count zero and undefined metrics. This overlapping diagnostic adds no gradient
+updates, sampling, loss weighting or stopping gate; resume ordinary batch training after evaluation.
 
 At update 0, score two simple baselines: always predict `[0, 0]`, or predict constant velocity
 `[v0 * t, v0]`. They reveal whether the network improves on trivial guesses. Keep per-row errors
