@@ -1,6 +1,6 @@
 # Transmodel — Exploration Plan
 
-Updated: 2026-09-23.
+Updated: 2026-09-25.
 
 Goal: train a small neural network to predict the cuboid's motion, then learn what improves its accuracy.
 
@@ -21,16 +21,23 @@ Starting at velocity `v0`, apply constant force `F` until `t1`, then coast until
 
 The physics function returns `(v, d)`; the dataset and network use `[d, v]`.
 
-## Now — train and evaluate the baseline
+## Stage 1 — train and evaluate the baseline, recording learning curves
 
 1. Load the existing splits and prepare batches. Fit any data-based normalization on training data only.
 2. Train the existing network with scaled squared error and a PyTorch optimizer. Understand prediction → loss → gradients → parameter update.
-3. Track training and validation loss. Report displacement error in metres and velocity error in m/s, including average and worst errors. Inspect rest, stopping, and reversal cases; independently check questionable physics labels.
-4. Choose acceptable displacement and velocity errors in the evaluation setup. Save the model, settings, and results. Use validation data for decisions; reserve test data for final evaluation.
+3. Collect learning curves alongside training: optimizer updates on the X-axis; validation loss and joint physical-tolerance pass rates on the Y-axes. Use the fixed validation schedule in the [execution plan](transmodel_training_plan.md). The curve is an experimental result, not a prescribed logarithmic shape or a dynamic training controller.
+4. Keep the three tolerance rulers and select one for stopping. Require at least 95% overall joint coverage on BOTH the full training and validation sets. Motion groups are diagnostic only. A stop checker also stops after 500 updates without meaningful validation-MSE improvement or at the 10,000-update cap; choose the minimum improvement before running. Report physical errors and inspect group/boundary failures.
+5. Save intermediate checkpoints, normalization, settings, metrics, and results during this first run so the subsequent demonstration can show training progress. Use validation data for decisions; reserve test data for final evaluation. See the execution plan for the checkpoint schedule and reporting requirements.
 
 Finish this stage with a trained model and a clear account of where its predictions work or fail.
 
-## Then — three focused experiments
+## Stage 2 — demonstrate the first trained model, before comparison experiments
+
+Create a 3D presentation of the current one-dimensional cuboid motion, comparing the analytical reference with predictions from the first model and its saved training checkpoints. This is the second project milestone: Sariel intends to show the training result to someone within the next few days. Complete it before architecture, data-size, or loss comparisons; it does not depend on training Models B or C.
+
+Defer animation design until the first model has been trained. Present the measured capabilities and failures honestly, with the task, tolerances, coverage, and synthetic-reference scope stated. A 3D rendering does not imply learned six-degree-of-freedom dynamics.
+
+## Stage 3 — focused comparison experiments
 
 1. **Architecture:** compare one versus two hidden layers and 16 versus 32 neurons per layer. Keep data, loss, and training settings comparable.
 2. **Loss:** compare squared error with MAE or Huber, or adjust output weighting if results justify it. Judge using the same physical error metrics, not raw loss values across different losses.

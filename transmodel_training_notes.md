@@ -1,6 +1,6 @@
 # Transmodel: supporting notes
 
-Companion to [the execution plan](transmodel_training_plan.md), updated 2026-09-24.
+Companion to [the execution plan](transmodel_training_plan.md), updated 2026-09-25.
 This file contains reasoning, hypotheses, evidence, and interpretation. The execution plan defines the workflow.
 Related material: `transmodel_exploration_plan.md` and the tolerance/validation PDFs in `learning_documents/`.
 Status: label-based baseline checks have run; neural-network training has not.
@@ -50,8 +50,10 @@ Repeated checks on the same validation set are not independent statistical confi
 
 Three tolerance levels (0.1, 0.01, 0.001 in the respective physical units) are evaluation milestones, not training stages.
 A sample passes only when both displacement and velocity meet their tolerances.
-The candidate 95% overall and 95% within each main motion group is not yet an established application requirement.
-The stopping milestone and coverage must be chosen before running.
+Sariel confirmed that overall training AND validation joint pass rates must each reach at least 95%
+at the selected tolerance. Motion-group rates are diagnostic only, with no group acceptance threshold.
+This is a project criterion, not a requirement established by a real-world application.
+The stopping milestone must be chosen before running; required coverage is fixed at 95%.
 
 Always-resting and moved-then-stopped cases can both have zero final velocity.
 Group membership therefore comes from reference behavior, not predictions or final velocity alone.
@@ -64,6 +66,48 @@ Looser tolerances near difficult boundaries require justification from the inten
 Pure relative error is undefined at zero and unstable near zero.
 A future mixed rule could use absolute error ≤ absolute allowance + relative allowance × |reference value|,
 with separate rules for displacement and velocity.
+
+## Understanding evaluation and group labels
+
+### Reading the three tolerance rulers
+
+Each validation prediction is evaluated once, then its physical errors are compared with all three
+tolerance pairs. For example, displacement error 0.006 m and velocity error 0.008 m/s pass the coarse
+and intermediate rulers but fail the fine ruler. The pass rates therefore satisfy coarse >=
+intermediate >= fine on the same sample set. A hypothetical result of 99%, 96%, and 72% means
+intermediate precision reaches 95% coverage but fine precision does not. The training-set rate must
+also reach 95% for the selected ruler to trigger success. These numbers are illustrative, not measurements.
+The selected ruler changes the stopping criterion, not the standardized MSE or its gradients.
+
+### Group metadata survives shuffled batches
+
+The current CSV has six numeric columns and no motion-group column. Attach a derived group ID in
+the dataset loader, or store it in a sidecar keyed by split, dataset hash and row index; do not silently
+rewrite the existing labels. A sample carries its inputs, targets and group ID together when shuffled.
+The ID is diagnostic metadata, not an input feature or an extra target for the regression network.
+
+For the current reference and positive force duration, initial rest with force at or below the static
+threshold identifies always-resting cases. Among the remaining rows, zero reference final velocity
+identifies moved-then-stopped cases; nonzero final velocity identifies moving-at-observation cases.
+Use reference stop logic, not the prediction tolerance, and verify these rules on representative cases.
+Zero net displacement alone is insufficient because reversal can return an object toward its origin.
+Moving at observation is a deliberate name: the group can contain reversals and is not necessarily
+in motion at every intermediate instant. Event-specific subdivisions can be added later if useful.
+
+An unreduced squared-error tensor has shape [batch, 2]. Average its two entries per sample to obtain
+[batch] losses, select samples by group ID, then accumulate group sums and counts across batches.
+The mean across all samples still supplies the training loss. If only that scalar mean was retained,
+individual losses cannot be reconstructed; keeping them before reduction solves this problem.
+Evaluation uses the whole fixed validation set, so group curves do not depend on which groups happen
+to appear in a particular training batch. Missing groups have count zero and undefined rates.
+
+### Why evaluate simple baselines at update zero?
+
+The previous plan's third-from-last validation bullet meant evaluating two non-learning predictors:
+zero output [0, 0], and constant velocity [v0 * t, v0]. Neither uses a trained network. Score both on
+the same validation rows and rulers; they show whether good-looking scores arise merely from many
+stationary or zero-final-velocity examples. The existing evidence below demonstrates that pitfall.
+This is separate from the next bullet, which compares the same examples at neural updates 0 and 10.
 
 ## Discontinuities and physical limits
 
@@ -89,7 +133,39 @@ Overfitting may appear before the target is reached: training loss falls while v
 Target reached, progress stalled, budget exhausted, and numerical/implementation failure are distinct outcomes.
 A plateau under the current setup does not establish success or prove the architecture is inadequate.
 A budget cap while errors still improve does not establish convergence.
-Additional plateau/deterioration stopping thresholds remain unspecified; they are not automatically enabled.
+The stop checker combines target achievement, 500 updates without meaningful validation-MSE progress,
+and a hard 10,000-update cap. The absolute minimum improvement remains to be selected before running.
+
+### How the early stopper works
+
+A validation check measures performance; a checkpoint saves a recoverable model state.
+The early stopper remembers progress and decides whether to continue. Logging a best step number
+does not preserve that model unless its checkpoint was actually saved.
+
+Use validation MSE as the early-stopping metric, while the joint physical pass rates retain their
+separate role in the success gate. Initialize the progress reference and its update counter from
+the finite validation result at update 0. At subsequent checks, an improvement is meaningful when
+`current_mse < progress_reference_mse - min_delta`, using an absolute `min_delta` in standardized
+MSE units. On meaningful improvement, replace the reference and reset the last-improvement update.
+Otherwise leave both unchanged, so successive small gains can accumulate against the same reference.
+
+Separately save every new absolute minimum validation MSE, even if its improvement is smaller than
+`min_delta`. The best-checkpoint record and the patience reference serve different purposes.
+After checking both overall training and validation rates for target achievement, stop for stagnation
+when the updates since meaningful improvement reach 500. Start the clock at update 0 without an extra
+warm-up, making update 500 the earliest possible stagnation stop.
+Check numerical validity first; non-finite metrics are a numerical failure, not a patience event.
+
+Measure patience in optimizer updates, not validation checks: the early validation schedule is denser.
+With the confirmed patience of 500 and the last meaningful improvement at update 200, a check at
+update 700 would stop if no further meaningful improvement occurred.
+An improvement at update 500 would restart the clock there. Stopping occurs only at a validation
+check, so the actual wait can exceed the configured patience. The value 500 is now confirmed;
+the numerical minimum improvement must still be specified before the run.
+
+Early stopping can respond to a plateau, noisy progress, or deterioration. It does not diagnose
+the cause and does not guarantee prevention of overfitting. Recover the lowest-MSE checkpoint if
+the success gate was never met, and report the unmet target rather than labeling stagnation as success.
 
 Lowest MSE and highest tolerance pass rate need not occur at the same checkpoint.
 The first target-passing checkpoint is the selected successful result; lowest MSE is the fallback if the target is not reached.
@@ -156,6 +232,55 @@ The full four-architecture × five-size × three-seed grid is 60 runs before los
 An equally budgeted learning-rate search or parameter-matched comparison can address later specific questions.
 
 ## Interpreting failures and extensions
+
+### Supplementary outputs from the first run
+
+Sariel's priorities are tracking prediction ability on unseen conditions, identifying harder motion
+groups, and measuring failure severity. Per-group curves distinguish slow learning from persistent
+errors; counts prevent a small group's percentage from being mistaken for strong evidence.
+Group-level difficulty localizes a problem but does not by itself identify its cause.
+
+For the selected and last valid checkpoints, retain per-example validation results with stable row
+IDs tied to the dataset hash: inputs, reference-defined group, targets, predictions, and absolute
+displacement/velocity errors. This supports paired comparisons of which examples improved or regressed.
+Analyze failed samples separately from the full validation set, using the selected stopping tolerance.
+Report failure counts and per-output error summaries, including typical and extreme errors; if none
+fail, report zero failures and leave failed-only summary statistics undefined rather than inventing zeros.
+
+For positive tolerances, define severity as `r = max(abs(d_error)/tau_d, abs(v_error)/tau_v)`.
+Under the strict pass convention, a sample passes when `r < 1`; `r = 1.1` means the worse normalized
+error is 1.1 times its allowance, whereas `r = 20` signals a much larger miss. Keep the original errors
+in metres and metres per second alongside this ranking. Inspect representative cases within failing
+groups as well as the largest misses; extreme examples alone do not characterize typical failure.
+
+Keep elapsed time and update counts for reproducibility, but do not make efficiency a primary first-run
+claim: this small workload can be strongly affected by startup and validation overhead.
+
+### A practical diagnosis after stopping
+
+1. Inspect the raw validation curve and stopper settings. Slow continued improvement may fall below
+   `min_delta`; short patience may mistake fluctuations for a plateau. A stop is evidence about the
+   configured observation window, not proof that further learning is impossible.
+2. Evaluate training and validation data at the same selected and last valid checkpoints, using the
+   same preprocessing, evaluation mode, and metrics. Per-batch training losses were measured on
+   different examples and changing parameters, so they are not an exact matched comparison.
+3. Localize errors by motion group and boundary slice, then inspect failed examples and their severity.
+   Broad errors suggest a different investigation from errors concentrated near breakaway or stopping.
+4. Write down a leading explanation and a controlled follow-up check. Do not automatically increase
+   network size, add data, or extend training merely because the stopper fired.
+
+Examples of follow-up checks include fitting a small fixed set away from difficult boundaries to
+check the training pipeline; comparing the original and a lower learning rate from the same saved
+training state with matched update budgets and batches; or checking coverage of a difficult region
+before adding independently generated training labels. Small-subset success does not prove global
+capacity, and failure does not uniquely identify a bug. Change one main factor and keep a baseline
+so the result can support or weaken the proposed explanation. These are conditional investigations,
+not additional experiments required before the first-model demonstration.
+
+Validation estimates generalization to unseen conditions represented by its distribution, not
+understanding of physical laws or reliability at new masses/friction coefficients. Because validation
+also guides stopping and later design choices, preserve the untouched test set for the frozen final
+choice; never use test failures as inputs to this diagnostic tuning loop.
 
 | Observation | Possible next investigation |
 |---|---|
