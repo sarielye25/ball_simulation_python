@@ -4,12 +4,7 @@ import csv
 import math
 from pathlib import Path
 
-from config import (
-    input_columns,
-    near_zero_scale_policy,
-    scale_epsilon,
-    target_columns,
-)
+from config import input_columns, target_columns
 
 
 ALWAYS_RESTING = "always_resting"
@@ -116,83 +111,6 @@ def assign_groups(inputs, targets, mass_kg, static_friction, gravity):
     return groups
 
 
-def fit_scaler(rows):
-    """Calculate one mean and standard deviation per training-data column."""
-
-    if not rows:
-        raise ValueError("Cannot fit a scaler to empty data.")
-
-    column_count = len(rows[0])
-    if column_count == 0:
-        raise ValueError("Cannot fit a scaler to rows without columns.")
-    if any(len(row) != column_count for row in rows):
-        raise ValueError("All rows must contain the same number of columns.")
-
-    row_count = len(rows)
-    means = [
-        math.fsum(row[column] for row in rows) / row_count
-        for column in range(column_count)
-    ]
-    standard_deviations = []
-
-    for column, mean in enumerate(means):
-        variance = (
-            math.fsum((row[column] - mean) ** 2 for row in rows)
-            / row_count
-        )
-        standard_deviation = math.sqrt(variance)
-
-        if standard_deviation < scale_epsilon:
-            if near_zero_scale_policy == "replace_with_one":
-                standard_deviation = 1.0
-            else:
-                raise ValueError(
-                    "A column has a near-zero standard deviation, but the "
-                    f"policy {near_zero_scale_policy!r} is not supported."
-                )
-
-        standard_deviations.append(standard_deviation)
-
-    return means, standard_deviations
-
-
-def transform(rows, means, standard_deviations):
-    """Standardize rows using statistics fitted on the training split."""
-
-    _check_scaler_dimensions(rows, means, standard_deviations)
-    return [
-        [
-            (value - means[column]) / standard_deviations[column]
-            for column, value in enumerate(row)
-        ]
-        for row in rows
-    ]
-
-
-def inverse_transform(rows, means, standard_deviations):
-    """Convert standardized rows back to their original physical values."""
-
-    _check_scaler_dimensions(rows, means, standard_deviations)
-    return [
-        [
-            value * standard_deviations[column] + means[column]
-            for column, value in enumerate(row)
-        ]
-        for row in rows
-    ]
-
-
-def _check_scaler_dimensions(rows, means, standard_deviations):
-    """Check that data rows and scaler statistics have matching widths."""
-
-    if len(means) != len(standard_deviations):
-        raise ValueError("Means and standard deviations must have equal lengths.")
-    if any(len(row) != len(means) for row in rows):
-        raise ValueError("Each row must match the number of scaler columns.")
-    if any(scale <= 0 or not math.isfinite(scale) for scale in standard_deviations):
-        raise ValueError("Every standard deviation must be positive and finite.")
-
-
 if __name__ == "__main__":
     train_inputs, train_targets = load_split(
         "labels/train.csv",
@@ -205,22 +123,8 @@ if __name__ == "__main__":
         static_friction=0.4,
         gravity=9.81,
     )
-    input_means, input_standard_deviations = fit_scaler(train_inputs)
-    target_means, target_standard_deviations = fit_scaler(train_targets)
-    standardized_inputs = transform(
-        train_inputs,
-        input_means,
-        input_standard_deviations,
-    )
-    standardized_targets = transform(
-        train_targets,
-        target_means,
-        target_standard_deviations,
-    )
 
     print(f"Loaded {len(train_inputs)} training rows.")
     print(f"First input row: {train_inputs[0]}")
     print(f"First target row: {train_targets[0]}")
     print(f"First reference group: {train_groups[0]}")
-    print(f"First standardized input row: {standardized_inputs[0]}")
-    print(f"First standardized target row: {standardized_targets[0]}")
