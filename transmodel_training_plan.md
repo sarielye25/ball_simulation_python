@@ -27,6 +27,25 @@ Before the run, select the stopping tolerance, set an absolute `min_delta` in st
 validation-MSE units, and record a seed. No extra warm-up is proposed: start the progress clock
 at update 0; the first possible stagnation stop is update 500.
 
+### Input, target and loss scaling choice
+
+Two mathematically valid target-scaling methods are worth comparing in a later controlled experiment:
+
+1. **Standardize before the network and loss.** Fit the mean and standard deviation of each input and
+   target column on the training split. Feed standardized inputs to the network, train the network to
+   produce standardized targets, and calculate MSE between standardized predictions and standardized
+   targets. Convert predictions back to physical units for physical-error evaluation.
+2. **Predict physical targets and scale the error inside the loss.** Standardize the inputs, let the
+   network directly predict displacement and velocity in physical units, then calculate squared loss
+   from `(prediction - target) / training_target_standard_deviation`. This method changes the numerical
+   coordinates of the network output while retaining standard-deviation-scaled errors.
+
+The initial training protocol uses **Method 1**: inputs and targets are standardized before training,
+and the network predicts standardized outputs. PyTorch `MSELoss` then compares standardized predictions
+with standardized targets. All means and standard deviations are fitted on training data only and kept
+fixed for validation, test evaluation and later inference. Method 2 is reserved for a controlled follow-up,
+not mixed into the initial run.
+
 **Tolerance is the ruler; coverage is how many samples satisfy that ruler.**
 
 | Evaluation ruler | Displacement error must be below | Velocity error must be below |

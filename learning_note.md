@@ -1,6 +1,6 @@
 # Learning Notes — transmodel
 
-Last updated: 2026-09-23 +08:00 (Asia/Hong_Kong)
+Last updated: 2026-09-26 +08:00 (Asia/Hong_Kong)
 
 These Q&A notes summarize the discussion of `transmodel_learning_guide.pdf`, `neuron_network_supplementary.pdf`, and `loss_function_supplementary.pdf`, including the prediction contract, examples, world models, future language exploration, neural-network layers and activations, supervised training, and loss-function terminology. The timestamp records this revision; update it whenever these notes are revised.
 
@@ -462,6 +462,28 @@ The scale enters through the chain rule: differentiating the square gives \(2e/s
 If the numerical scale is 0.01, the normalized error is 100 times the original numerical error, and the gradient with respect to the original prediction is 10,000 times that of unscaled squared error. This numerical comparison holds the original units and model parameterization fixed. Differentiating with respect to the normalized prediction \(\widehat z=\widehat y/s\) instead gives \(2e/s\); these are derivatives with respect to different coordinates.
 
 No automatic compensation cancels this effect. For a single loss under ordinary gradient descent, multiplying the learning rate by \(s^2\) would cancel the uniform gradient scaling. With several loss components scaled differently, one learning-rate adjustment generally cannot cancel their changed relative influences.
+
+## Q: How can I choose the scale instead of selecting one arbitrarily?
+
+**A:** Sariel connected the scale on page 3 of `loss_function_supplementary.pdf` with data normalization. One systematic choice is to use each variable's standard deviation in the training data. For a value \(x\), training mean \(\mu\), and training standard deviation \(\sigma\), standardization is:
+
+\[
+z=\frac{x-\mu}{\sigma}.
+\]
+
+If both the prediction and reference target are standardized with the same \(\mu\) and \(\sigma\), their difference is:
+
+\[
+\widehat z-z
+=\frac{\widehat y-\mu}{\sigma}-\frac{y-\mu}{\sigma}
+=\frac{\widehat y-y}{\sigma}.
+\]
+
+The mean cancels, so calculating loss between standardized predictions and targets is equivalent to dividing the physical error by the target's training-set standard deviation. This gives a concrete, data-derived scale: an error of 1 means an error equal to one training standard deviation.
+
+Fit the mean and standard deviation on the training split only, then reuse those fixed values for validation, test data, and inverse conversion back to physical units. This prevents information from validation or test data from influencing the training setup.
+
+Standard deviation is a useful starting choice because it puts variables with different units and typical spreads onto comparable numerical scales. It is not automatically an acceptance tolerance or a statement of physical importance. If one standard deviation of displacement is much larger than the maximum error acceptable for the application, the statistical scale and the acceptance tolerance answer different questions.
 
 ## Q: Are scale and importance the same thing?
 
