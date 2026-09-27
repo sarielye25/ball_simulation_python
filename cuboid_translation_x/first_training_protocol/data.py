@@ -6,7 +6,12 @@ from pathlib import Path
 import numpy as np
 import torch
 
-from config import input_columns, target_columns
+from config import (
+    input_columns,
+    target_columns,
+    scale_epsilon,
+    near_zero_scale_policy,
+)
 
 ALWAYS_RESTING = "always_resting"
 MOVED_THEN_STOPPED = "moved_then_stopped"
@@ -128,15 +133,71 @@ def _as_float_array(name, values, expected_columns=None):
     return array
 
 
-def _as_scaler_array(name, values):
-    """Validate one two-value target-scaler parameter."""
+def _as_scaler_array(name, values, expected_columns=2):
+    """Validate one input- or target-scaler parameter."""
 
     array = np.asarray(values, dtype=np.float64)
-    if array.shape != (2,):
-        raise ValueError(f"{name} must contain exactly two values.")
+    if array.shape != (expected_columns,):
+        raise ValueError(f"{name} must contain exactly {expected_columns} values.")
     if not np.isfinite(array).all():
         raise ValueError(f"{name} contains a non-finite value.")
     return array
+
+
+def fit_scaler(
+    train_inputs,
+    train_targets,
+    *,
+    epsilon=scale_epsilon,
+    policy=near_zero_scale_policy,
+):
+    """Fit column means and population standard deviations on training rows.
+
+    The caller must supply only training rows, never validation or test rows.
+    Reuse the returned statistics unchanged for every split. Values are lists
+    so the result can be recorded as JSON or passed to the checkpoint writer.
+    """
+    inputs = _as_float_array("train_inputs", train_inputs, expected_columns=4)
+    targets = _as_float_array("train_targets", train_targets, expected_columns=2)
+    if len(inputs) == 0 or len(inputs) != len(targets):
+        raise ValueError("Training inputs and targets must have equal, nonzero row counts.")
+    if not math.isfinite(epsilon) or epsilon <= 0:
+        raise ValueError("epsilon must be finite and greater than zero.")
+    if policy != "replace_with_one":
+        raise ValueError("Only the replace_with_one scale policy is supported.")
+
+    normalization = {"scale_epsilon": epsilon, "near_zero_scale_policy": policy}
+    for name, values in (("input", inputs), ("target", targets)):
+        mean = values.mean(axis=0)
+        scale = values.std(axis=0, ddof=0)
+        if not np.isfinite(mean).all() or not np.isfinite(scale).all():
+            raise ValueError(f"{name} scaling statistics are not finite.")
+        scale = np.where(scale < epsilon, 1.0, scale)
+        normalization[f"{name}_mean"] = mean.tolist()
+        normalization[f"{name}_scale"] = scale.tolist()
+    return normalization
+
+
+def standardize_inputs(physical_values, input_mean, input_scale):
+    """Convert physical [v0, F, t1, t] values using training statistics."""
+    physical = _as_float_array("physical_values", physical_values, expected_columns=4)
+    mean = _as_scaler_array("input_mean", input_mean, expected_columns=4)
+    scale = _as_scaler_array("input_scale", input_scale, expected_columns=4)
+    if np.any(scale <= 0):
+        raise ValueError("input_scale values must be greater than zero.")
+    return (physical - mean) / scale
+
+
+def inverse_standardize_inputs(standardized_values, input_mean, input_scale):
+    """Recover physical [v0, F, t1, t] values from standardized inputs."""
+    standardized = _as_float_array(
+        "standardized_values", standardized_values, expected_columns=4
+    )
+    mean = _as_scaler_array("input_mean", input_mean, expected_columns=4)
+    scale = _as_scaler_array("input_scale", input_scale, expected_columns=4)
+    if np.any(scale <= 0):
+        raise ValueError("input_scale values must be greater than zero.")
+    return standardized * scale + mean
 
 def inverse_standardize_targets(standardized_values, target_mean, target_scale):
     """Convert standardized [displacement, velocity] values to physical units."""

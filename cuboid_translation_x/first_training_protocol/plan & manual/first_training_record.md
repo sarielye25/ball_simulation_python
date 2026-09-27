@@ -103,7 +103,7 @@ first_training_protocol/
 
 ## 02 `data.py`
 
-**Status:** Current learning task. No implementation has been delegated; the code will be written piece by piece.
+**Status:** Loading, validation, motion grouping, and input/target scaling implemented. Row identity and DataLoader integration remain pending.
 
 **Responsibility:** Turn CSV label files into trustworthy model data while preserving row identity and reference-group metadata. Fit data-derived scaling statistics on training data only.
 
@@ -136,6 +136,15 @@ first_training_protocol/
 - Reference groups will be derived in `data.py`. They are metadata used for evaluation, not inputs or prediction targets.
 - Standard deviation is the initial data-derived scale. Statistics are fitted on training data only and then fixed.
 - For a normal batch, `N = 128` in shapes `[N, 4]` and `[N, 2]`. The last batch may be smaller because `drop_last` is false.
+
+### Implementation update — 27 September 2026: normalization
+
+- Added `fit_scaler(train_inputs, train_targets)` to `data.py`. It calculates per-column means and population standard deviations (`ddof=0`) for four inputs and two targets. The caller must pass training rows only; arrays do not carry split identity, so this function cannot independently detect validation/test leakage.
+- The returned dictionary contains `input_mean`, `input_scale`, `target_mean`, and `target_scale`, plus `scale_epsilon` and `near_zero_scale_policy`. Reuse these statistics unchanged for validation and later frozen-choice test evaluation. Lists can be recorded in JSON and the four parameter fields match the checkpoint interface.
+- Applied the existing configuration: standard deviations below `scale_epsilon=1e-8` are replaced with one under `replace_with_one`. Empty/mismatched training rows, malformed shapes, non-finite values/statistics, invalid epsilon, and unsupported policies are rejected.
+- Added `standardize_inputs()` and `inverse_standardize_inputs()`. Existing target-standardization APIs are unchanged. Transformations return NumPy float64 arrays; the training caller must explicitly convert model tensors to CPU float32.
+- Verified with the project `.venv`: 8,000 training rows and 1,000 validation rows recover their original inputs and targets after round trips; training standardized columns have mean zero and standard deviation one; validation transforms leave scaler statistics unchanged. Constant/near-zero columns and eight invalid-input cases also passed. Reserved test data was not opened.
+- This change supplies shared data-processing functions for the upcoming `checks.py`; it does not perform optimizer updates or implement the preflight learning checks. Row IDs and DataLoader integration remain pending.
 
 ## 03 `neural_network.py`
 
@@ -253,7 +262,7 @@ first_training_protocol/
 
 ## 07 `checks.py`
 
-**Status:** Planned.
+**Status:** Implemented and verified on 27 September 2026.
 
 **Responsibility:** Detect data, scaling, model, and learning errors before beginning the real run.
 
@@ -278,9 +287,19 @@ first_training_protocol/
 
 - Tool choices are provisional until this file is studied.
 
+### Implementation update — 27 September 2026: preflight checks
+
+- Added `checks.py` with reusable `check_data()`, `check_scaling()`, and `check_learning()` functions and a `unittest` command entry point. Run `python checks.py` using the project environment, or from this directory run `..\..\.venv\Scripts\python.exe checks.py`. Any failing check exits with a nonzero status.
+- Data checks reuse `data.load_split()` for 8,000 training and 1,000 validation rows, verify shapes/groups, reject repeated push conditions, and compare every target against the analytical reference. Independent analytical cases cover rest, both static-threshold signs, sliding, stopping, reversal, and breakaway. Malformed CSV fixtures exercise missing columns, empty data, nonnumeric/non-finite values, invalid times, missing values, and row-count mismatch.
+- Scaling checks fit training rows only, verify training statistics, round-trip both train and validation inputs/targets, ensure transformations leave statistics unchanged, and exercise constant/near-zero columns. This verifies the preflight path; the future training loop must also preserve the train-only fitting rule.
+- Learning checks create a fresh CPU float32 model and Adam using configured learning rate/weight decay, then check prediction shape, finite predictions/loss/gradients/parameters, and an actual parameter change after the first update. A seeded fixed sample of 64 training rows is fitted for 500 updates. Requiring at least 80% standardized-MSE reduction is an explicit diagnostic choice, not a manual-specified threshold or a real-run stopping rule.
+- Added strict joint-tolerance boundary and stopping checks: target at update zero, accumulated sub-min_delta improvements, progress at 200 followed by stopping at 700, simultaneous patience/cap, and numerical abort.
+- Validation: all five unittest methods passed, including the data checks in suite setup. Small-fit MSE decreased from 1.74388 to 0.00584843. A separate check confirmed preservation of Python, NumPy, and CPU PyTorch RNG states.
+- Reserved test data is never opened. No learning model, optimizer state, or checkpoint is returned or saved. Start the real run with a newly initialized model and optimizer; the small fit is implementation evidence only. Training-loop integration remains pending.
+
 ## 08 `training_loop.py`
 
-**Status:** Planned existing file to edit.
+**Status:** Training orchestration implemented and verified with disposable diagnostic runs on 27 September 2026. Full first training run has not been started.
 
 **Responsibility:** Coordinate setup, mini-batch updates, scheduled full-set evaluation, checkpoints, stopping, and evidence logging.
 
@@ -307,11 +326,35 @@ first_training_protocol/
 
 - Tool choices are provisional until this file is studied.
 
+### Implementation update — 27 September 2026: training loop
+
+- Completed the existing `training_loop.py`, retaining `prepare_data()`. Functions separate data preparation, one differentiable Adam update, full-split evaluation, checkpoint reload verification, and run orchestration. Run with `..\..\.venv\Scripts\python.exe training_loop.py`; `--max-updates 64` creates a separately recorded short diagnostic run.
+- Fit normalization only on training rows; preserve physical values, source CSV SHA-256 hashes, and split/CSV-line row IDs. CPU float32 training uses shuffled batches of 128, including the final 64-row batch. An explicit `torch.randperm` and batch cursor replace DataLoader here so checkpoints can retain the exact current order and next position. Groups and IDs stay in canonical split order and can be mapped using those same indices.
+- Evaluate the unchanged model on full train/validation at updates 0, 10, 20, 50, 100, every subsequent 100, and the configured terminal cap. Save training baselines at zero, per-row errors in checkpoints at updates 0 and 10, matched overall/group/breakaway summaries, and every evaluation checkpoint. No reserved test rows are opened.
+- Stop decisions precede scheduler updates; the scheduler runs only at zero and regular 100-update checks when training continues. Checkpoint saving then ranks every absolute validation-MSE improvement and stores the post-decision scheduler/optimizer/stop states. Final selection is current on target success, otherwise absolute best MSE on normal budget/patience termination.
+- Each checkpoint is reloaded into a separate model and required to reproduce batch predictions exactly. Sampler state, epoch, permutation/cursor, exposure count, and stopping state are saved for continuation. This script starts fresh runs; a resume CLI is not implemented.
+- Run artifacts: `run.json`, `batches.csv`, `evaluations.csv`, `evaluation_events.csv`, `baselines.csv`, `termination.json`, and `checkpoints/`. Batch logs retain pre-update loss and learning rate used; evaluation events retain next learning rate, scheduling decisions, progress reference and stop flags. Numerical errors abort with the last verified checkpoint recorded; invalid current weights are not selected.
+- Added `test_training_loop.py`. All nine tests across this file and `checks.py` passed. A real 64-update diagnostic verified evaluation scheduling, 8,128 row exposures, the partial batch, cap selection, and exact Adam continuation from update 10 through update 20. Injected evaluation stalls verified the reduction at 200 and stopping at 500; target-at-zero and numerical-abort cases passed. Outputs were temporary and removed automatically.
+- User confirmed `cooldown=0` globally. The configuration, learning-rate protocol, HTML plan, and PDF coding-manual amendment now agree: no cooldown checks after a learning-rate reduction.
+- Plot generation, selected/last failure tables, and full diagnosis remain responsibilities of `report.py`; they are not automatically generated by this loop.
+
 ## 09 `report.py`
 
-**Status:** Curve plotting implemented and checked with temporary sample data. Training-loop integration, failure tables and full run diagnosis remain planned.
+**Status:** Static plots retained. The HTML prototype has been retired at the user's request. Qt replacement is design-only, pending approval of `qt_building_plan.md`; no Qt implementation or dependency installation has begun.
 
 **Responsibility:** Turn saved run evidence into curves, failure tables, a factual summary, and a focused diagnosis.
+
+### HTML report update — 27 September 2026
+
+Historical implementation record below: the HTML template, report-specific tests, synthetic demo generator/output and HTML builder have subsequently been removed. `report.py RUN_DIRECTORY` now exports the existing static PNG/SVG plots. Training code, training checks, real labels and training artifacts remain. The unrelated standalone `cuboid_setting.py` visualization and generated bytecode cache were also removed. Qt requirements and handoff acceptance criteria are recorded in `qt_building_plan.md`.
+
+- `report.py RUN_DIRECTORY` builds `report.html` using `report_template.html`, with no external JavaScript or network requirement. `--static-plots` additionally exports the existing PNG/SVG curves; `--labels-directory` supplies an alternate dataset such as the isolated demo labels.
+- Side-by-side full train/validation histories share Y-axis limits and offer a metric selector, scope toggles, point tooltips, selected-checkpoint and learning-rate-reduction markers, and training baselines. Pass-rate axes are fixed at 0–100%.
+- Every checkpoint can be selected, with independent train/validation and tolerance selectors. Group counts, pass rates and failure counts are shown separately; the overlapping breakaway slice is labelled separately. Failure tables show row ID, motion group, four physical inputs, true/predicted outputs, signed/absolute errors, failure type and tolerance-relative severity. Filtering, pagination, sorting and CSV download operate on all rows, not a truncated sample.
+- Summary describes termination, selected model, train/validation target attainment, validation failure types and weakest group, and selected-versus-last MSE. It reports observed patterns rather than asserting an unverified cause.
+- The report hashes both label CSVs against saved run identity before loading them, restores each checkpoint's normalization, and computes inference without updating weights. Reserved test data is not read.
+- `demo_report.py` creates `demo_training_report/labels` with 192 synthetic training and 96 synthetic validation rows, then uses the actual training loop for 300 diagnostic updates. The resulting seven checkpoints and CSV/JSON logs have the same format as real runs. `purpose=synthetic_demo` and a visible banner distinguish this from real training evidence. The generator refuses to overwrite an existing demo directory.
+- Verified report schema, checkpoint/row coverage and changed-data hash rejection with `test_report.py`; `node test_report.js` executes report JavaScript against a minimal DOM stub, checking all checkpoint/split/ruler combinations, failure-count agreement, metric switching and empty searches. No connected browser was available, so browser layout and native download interaction have not been visually verified.
 
 ### Task breakdown
 

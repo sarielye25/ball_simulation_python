@@ -89,6 +89,8 @@ def plot_curves(run_directory):
     return outputs
 
 
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("run_directory", type=Path)
