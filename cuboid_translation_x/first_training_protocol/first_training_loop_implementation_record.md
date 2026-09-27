@@ -18,10 +18,10 @@ This document records how I design and implement the first training loop. For ea
 
 | Field | Current entry |
 | --- | --- |
-| Project stage | Beginning the data pipeline |
-| Current file | `data.py` |
-| Current coding piece | Open one CSV split and read rows by column name |
-| Last updated | 26 September 2026 |
+| Project stage | Evaluation metrics and plotting interfaces implemented; training integration pending |
+| Current file | `metrics.py`, `training_records.py`, `report.py` |
+| Current coding piece | Record the confirmed plotting design and training output layout |
+| Last updated | 27 September 2026 |
 
 ## File Map
 
@@ -32,15 +32,46 @@ The first ten files form the initial training and evidence pipeline. The final t
 | 01 | `config.py` | Protocol and run settings | In progress |
 | 02 | `data.py` | Load, validate, group, and scale data | Current |
 | 03 | `neural_network.py` | Define the prediction network | Existing file to review |
-| 04 | `metrics.py` | Evaluate predictions and groups | Planned |
+| 04 | `metrics.py` | Evaluate predictions and groups; D/V loss decomposition | Implemented |
 | 05 | `checkpoints.py` | Save and restore training state | Planned |
 | 06 | `stopping.py` | Apply stopping decisions | Planned |
 | 07 | `checks.py` | Run preflight correctness checks | Planned |
 | 08 | `training_loop.py` | Orchestrate training and evaluation | Planned |
-| 09 | `report.py` | Create evidence and diagnosis | Planned |
+| 09 | `report.py` | Create evidence and diagnosis | Curve plotting implemented; other reports planned |
+| Support | `training_records.py` | Save evaluation and baseline CSV files | Implemented; training-loop integration pending |
 | 10 | `final_test.py` | Evaluate the frozen final choice | Planned |
 | 11 | `animate.py` | Demonstrate the first model | Deferred |
 | 12 | `compare.py` | Run controlled comparisons | Deferred |
+
+## Current training folder structure (2026-09-27)
+
+The tree below distinguishes existing files from outputs generated during a run. `labels/` contains input label data; `training_data/` stores training statistics and figures separately.
+
+```text
+first_training_protocol/
+├── config.py                         Training and evaluation settings
+├── cuboid_setting.py                 Physical environment settings
+├── physics_formula.py                Analytical physics reference
+├── label_preparation_v2.py           Label generation
+├── labels/                           Existing labels, README, and metadata
+├── data.py                           Loading, validation, groups, target scaling and inverse scaling
+├── neural_network.py                 Network architecture
+├── metrics.py                        Evaluation: overall, groups, breakaway, and baselines
+├── training_records.py               Evaluation/baseline CSV storage and separate run directories
+├── report.py                         Read CSV files and plot with Matplotlib
+├── training_data/
+│   ├── README.md                     Recording interfaces, metrics, and plotting instructions
+│   └── <timestamp>/                  Created per run; no actual training results exist yet
+│       ├── evaluations.csv           Metrics by evaluation update, split, and sample scope
+│       ├── baselines.csv             Two training baselines calculated once
+│       └── figures/                  Created when plotting; PNG and SVG files for each metric
+├── transmodel_training_plan_updated.html       Current general training plan
+├── tm_first_training_coding_manual_with_responsibilities.pdf
+├── first_training_loop_implementation_record.md  This technical and decision record
+└── __pycache__/                      Automatically generated Python cache
+```
+
+`training_loop.py`, `checkpoints.py`, `stopping.py`, `checks.py`, and `final_test.py` have not yet been implemented in this folder. `animate.py` and `compare.py` are deferred. The File Map above includes these planned files; it does not imply that they already exist.
 
 ## 01 `config.py`
 
@@ -135,7 +166,7 @@ The first ten files form the initial training and evidence pipeline. The final t
 
 ## 04 `metrics.py`
 
-**Status:** Planned.
+**Status:** Implemented, including separate standardized D/V MSE and their contributions to the current equal-weight loss.
 
 **Responsibility:** Measure full training and validation performance using standardized loss, physical errors, tolerance rulers, groups, and simple baselines.
 
@@ -162,7 +193,7 @@ The first ten files form the initial training and evidence pipeline. The final t
 
 ## 05 `checkpoints.py`
 
-**Status:** Planned.
+**Status:** Implemented; training-loop integration remains pending. See `learning_rate_protocol.md` for the confirmed scheduler/stopping amendment.
 
 **Responsibility:** Preserve model states and the information required to reproduce predictions or continue a run.
 
@@ -185,11 +216,14 @@ The first ten files form the initial training and evidence pipeline. The final t
 
 ### Decision record
 
-- Tool choices are provisional until this file is studied.
+- Confirmed: immutable PyTorch snapshots, atomic writes, and a JSON index with separate MSE/pass-rate rankings and explicit final selection. CPU RNG, Adam and scheduler states are supported; the caller restores sampler and stopping metadata.
+- Checked prediction equality, RNG restoration, exact next Adam update, scheduler reduction after restoration, ranking/tie rules, final selection and rejection of duplicate updates/non-finite MSE using temporary synthetic data.
+- Output paths are configured in `config.py`; run directories contain `checkpoints/` and `figures/`. See `training_data/README.md`.
+- Use PyTorch ReduceLROnPlateau with 200-update reduction patience (100-update cadence, PyTorch patience=1), alongside unchanged 500-update early stopping. The future training loop will execute this policy; see `learning_rate_protocol.md`.
 
 ## 06 `stopping.py`
 
-**Status:** Planned.
+**Status:** Implemented; training-loop integration remains pending.
 
 **Responsibility:** Turn evaluation results into ordered target, progress, patience, and update-cap decisions.
 
@@ -197,7 +231,7 @@ The first ten files form the initial training and evidence pipeline. The final t
 
 - Represent the stopping state and possible outcomes.
 - Check numerical validity first.
-- Recognize a new absolute best checkpoint.
+- Leave absolute-best checkpoint tracking to `checkpoints.py`.
 - Check the selected-ruler target on both train and validation sets.
 - Update the progress reference only after a meaningful improvement.
 - Apply patience and maximum-update rules in the specified order.
@@ -212,7 +246,10 @@ The first ten files form the initial training and evidence pipeline. The final t
 
 ### Decision record
 
-- Tool choices are provisional until this file is studied.
+- `StopReason` names outcomes; `StopState` remembers progress MSE/update and the last checked update; immutable `StopDecision` returns the reason, selection policy and limit flags; `check_stop()` validates input and performs the ordered checks while updating state in place.
+- Initialize at update zero; check the selected-ruler full-training/full-validation target before progress, patience and cap. Non-finite results abort separately without changing state. Both patience/cap flags are retained when they coincide, with NO_PROGRESS primary.
+- The caller maps selection `current` to the just-saved filename, or passes `best_mse` to `select_checkpoint()`. Numerical failure and continuing decisions do not select a final model.
+- Save state via `dataclasses.asdict(state)` inside checkpoint continuation metadata; restore via `StopState(**saved_state)`. The scheduler has its own counters. Confirmed cooldown is zero, reduction patience 200 updates, and early-stopping patience 500 updates.
 
 ## 07 `checks.py`
 
@@ -272,7 +309,7 @@ The first ten files form the initial training and evidence pipeline. The final t
 
 ## 09 `report.py`
 
-**Status:** Planned.
+**Status:** Curve plotting implemented and checked with temporary sample data. Training-loop integration, failure tables and full run diagnosis remain planned.
 
 **Responsibility:** Turn saved run evidence into curves, failure tables, a factual summary, and a focused diagnosis.
 
@@ -288,14 +325,32 @@ The first ten files form the initial training and evidence pipeline. The final t
 
 | Tool | Use in this file |
 | --- | --- |
-| Matplotlib | Create training and evaluation curves. |
+| Matplotlib (`subplots`, `plot`, `axhline`, `savefig`) | Confirmed: paired train/validation plots, evaluation markers, fixed baseline lines, matched axes, PNG/SVG export. |
 | `csv` | Read the structured history produced by the training loop. |
 | NumPy | Calculate failure rankings and descriptive statistics. |
 | `json` | Write a structured run summary. |
 
 ### Decision record
 
-- Tool choices are provisional until this file is studied.
+- Matplotlib is confirmed for plotting; CSV keeps the data reusable in Python or MATLAB without retraining.
+
+### Confirmed plotting design (2026-09-27)
+
+- Use actual parameter update counts on the x-axis. Each evaluation supplies one point; connect adjacent observations at their actual spacing without smoothing.
+- Create two side-by-side panels per metric: training on the left and validation on the right. Match axis scales, show numerical y-axis labels on both panels, and use consistent colors for each sample scope across figures.
+- Show seven training lines: overall, always resting, moved then stopped, moving at observation, the breakaway subset, the zero baseline, and the constant-velocity baseline. Calculate the two baselines once over the full training set and display them as horizontal dashed lines.
+- Show five validation lines: overall, the three motion groups, and breakaway. Validation baselines are omitted as requested.
+- Emphasize the overall line, use a dash-dot line for breakaway, and show sample counts in legends. Empty groups return `None`, produce blank CSV cells, and leave gaps in plots rather than being replaced with zero. Breakaway is an overlapping diagnostic subset with no separate acceptance gate.
+- Produce ten plot types: total standardized MSE, D standardized MSE, V standardized MSE, D loss contribution, V loss contribution, displacement P95 absolute error, velocity P95 absolute error, and joint pass rates under coarse/intermediate/fine tolerances. Store pass rates as 0–1 in CSV and display them as 0–100%. P95 is neither MSE nor a confidence interval.
+- The current loss averages the two standardized outputs equally. Each D/V contribution is half its corresponding standardized MSE; the contributions sum to total MSE. This decomposes the loss value, not gradient contributions, and does not automatically change training weights. Use these plots to inspect output differences and inform later controlled experiments.
+
+### Data recording and plotting responsibilities
+
+`metrics.py` returns dictionaries and arrays for the current evaluation. `training_records.py` uses the standard-library `csv`, `pathlib.Path`, and `datetime` modules to create separate run directories and save results. The future training loop will evaluate the full training and validation sets using the same model state, then call the recording interfaces. `report.py` reads saved files to generate plots.
+
+Each row in `evaluations.csv` identifies an update, split, predictor, and scope, and stores sample counts, error metrics, loss contributions, and all three pass rates. Scopes include overall, the three motion groups, and breakaway. `baselines.csv` stores the two training baselines separately. Pass `groups` and `physical_inputs` to each evaluation to obtain all five scopes. Training-log fields such as epoch, sample exposures, and elapsed time still need to be added when implementing the training loop.
+
+Use a separate `training_data/<timestamp>/` directory for each run to avoid mixing experiments. Run `python report.py training_data/<timestamp>` to save plots under that directory's `figures/` folder. Temporary sample data has been used to check loss decomposition, empty groups, CSV reading/writing, all ten plot types, seven training lines versus five validation lines, and matched axes. A sample layout was also inspected; these checks do not represent actual training results.
 
 ## 10 `final_test.py`
 

@@ -5,7 +5,14 @@ import torch
 
 from config import batch_size as default_batch_size
 from config import breakaway_band_N, tolerances
-from data import ALWAYS_RESTING, MOVED_THEN_STOPPED, MOVING_AT_OBSERVATION
+from data import (
+    ALWAYS_RESTING,
+    MOVED_THEN_STOPPED,
+    MOVING_AT_OBSERVATION,
+    _as_float_array,
+    inverse_standardize_targets,
+    standardize_targets,
+)
 
 
 GROUP_NAMES = (
@@ -13,59 +20,6 @@ GROUP_NAMES = (
     MOVED_THEN_STOPPED,
     MOVING_AT_OBSERVATION,
 )
-
-'''here are two helpers in this function to catch incorrect data before it produces misleading results.'''
-def _as_float_array(name, values, expected_columns=None):
-    """Convert tensor-like values to a finite NumPy float array."""
-
-    if isinstance(values, torch.Tensor):
-        values = values.detach().cpu().numpy()
-
-    array = np.asarray(values, dtype=np.float64)
-    if array.ndim != 2:
-        raise ValueError(f"{name} must be a two-dimensional array.")
-    if expected_columns is not None and array.shape[1] != expected_columns:
-        raise ValueError(
-            f"{name} must have {expected_columns} columns; got {array.shape[1]}."
-        )
-    if not np.isfinite(array).all():
-        raise ValueError(f"{name} contains a non-finite value.")
-    return array
-
-
-def _as_scaler_array(name, values):
-    """Validate one two-value target-scaler parameter."""
-
-    array = np.asarray(values, dtype=np.float64)
-    if array.shape != (2,):
-        raise ValueError(f"{name} must contain exactly two values.")
-    if not np.isfinite(array).all():
-        raise ValueError(f"{name} contains a non-finite value.")
-    return array
-
-'''These two functions are used to convert between standardized and physical units for the target values (displacement and velocity). They ensure that the input values are valid and perform the necessary calculations.'''
-def inverse_standardize_targets(standardized_values, target_mean, target_scale):
-    """Convert standardized [displacement, velocity] values to physical units."""
-
-    standardized = _as_float_array(
-        "standardized_values", standardized_values, expected_columns=2
-    )
-    mean = _as_scaler_array("target_mean", target_mean)
-    scale = _as_scaler_array("target_scale", target_scale)
-    if np.any(scale <= 0):
-        raise ValueError("target_scale values must be greater than zero.")
-    return standardized * scale + mean
-
-def standardize_targets(physical_values, target_mean, target_scale):
-    """Convert physical [displacement, velocity] values to standardized units."""
-
-    physical = _as_float_array("physical_values", physical_values, expected_columns=2)
-    mean = _as_scaler_array("target_mean", target_mean)
-    scale = _as_scaler_array("target_scale", target_scale)
-    if np.any(scale <= 0):
-        raise ValueError("target_scale values must be greater than zero.")
-    return (physical - mean) / scale
-
 
 def calculate_errors(
     standardized_predictions,
@@ -149,6 +103,10 @@ def summarize_metrics(
         return {
             "count": 0,
             "standardized_mse": None,
+            "displacement_standardized_mse": None,
+            "velocity_standardized_mse": None,
+            "displacement_loss_contribution": None,
+            "velocity_loss_contribution": None,
             "displacement_mae_m": None,
             "displacement_p95_m": None,
             "displacement_max_m": None,
@@ -169,6 +127,10 @@ def summarize_metrics(
     return {
         "count": count,
         "standardized_mse": float(squared_errors[selected].sum() / (2 * count)),
+        "displacement_standardized_mse": float(squared_errors[selected, 0].mean()),
+        "velocity_standardized_mse": float(squared_errors[selected, 1].mean()),
+        "displacement_loss_contribution": float(squared_errors[selected, 0].mean() / 2),
+        "velocity_loss_contribution": float(squared_errors[selected, 1].mean() / 2),
         "displacement_mae_m": float(selected_absolute[:, 0].mean()),
         "displacement_p95_m": float(np.percentile(selected_absolute[:, 0], 95)),
         "displacement_max_m": float(selected_absolute[:, 0].max()),
@@ -202,7 +164,7 @@ def group_metrics(standardized_squared_errors, physical_absolute_errors, pass_ma
     }
 
 
-def make_boundary_mask(
+def make_breakaway_selection_mask(
     physical_inputs,
     static_friction_limit=3.924,
     band_width=breakaway_band_N,
@@ -255,7 +217,7 @@ def summarize_predictions(
         )
 
     if physical_inputs is not None:
-        boundary = make_boundary_mask(physical_inputs)
+        boundary = make_breakaway_selection_mask(physical_inputs)
         result["boundary"] = summarize_metrics(
             errors["standardized_squared"],
             errors["physical_absolute"],

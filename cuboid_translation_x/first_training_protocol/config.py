@@ -1,3 +1,6 @@
+from pathlib import Path
+
+
 # training settings
 optimizer_name = 'adam'
 learning_rate = 0.001
@@ -20,6 +23,11 @@ min_delta = 0.001
 early_eval_updates = (0, 10, 20, 50, 100)
 per_row_error_updates = (0, 10)
 eval_interval = 100 # does that directly set up the evaluation schedule?
+lr_reduction_patience_updates = 200
+lr_scheduler_patience = lr_reduction_patience_updates // eval_interval - 1
+lr_reduction_factor = 0.5
+lr_min = 0.00001
+lr_cooldown_checks = 0
 breakaway_band_N = 0.2 # what does this parameter mean?
 tolerances = {
     "coarse": (0.1, 0.1),
@@ -28,6 +36,8 @@ tolerances = {
 }
 
 # data and output settings
+training_data_dir = Path(__file__).resolve().parent / "training_data"
+checkpoint_subdirectory = "checkpoints"
 #data_dir =   to be decided
 #run_dir =   to be decided
 expected_train_rows = 8000

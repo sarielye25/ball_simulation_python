@@ -3,14 +3,14 @@
 import csv
 import math
 from pathlib import Path
+import numpy as np
+import torch
 
 from config import input_columns, target_columns
-
 
 ALWAYS_RESTING = "always_resting"
 MOVED_THEN_STOPPED = "moved_then_stopped"
 MOVING_AT_OBSERVATION = "moving_at_observation"
-
 
 def load_split(csv_path, expected_rows=None):
     """Load and validate one CSV split, then return its inputs and targets."""
@@ -110,6 +110,55 @@ def assign_groups(inputs, targets, mass_kg, static_friction, gravity):
 
     return groups
 
+def _as_float_array(name, values, expected_columns=None):
+    """Convert tensor-like values to a finite NumPy float array."""
+
+    if isinstance(values, torch.Tensor):
+        values = values.detach().cpu().numpy()
+
+    array = np.asarray(values, dtype=np.float64)
+    if array.ndim != 2:
+        raise ValueError(f"{name} must be a two-dimensional array.")
+    if expected_columns is not None and array.shape[1] != expected_columns:
+        raise ValueError(
+            f"{name} must have {expected_columns} columns; got {array.shape[1]}."
+        )
+    if not np.isfinite(array).all():
+        raise ValueError(f"{name} contains a non-finite value.")
+    return array
+
+
+def _as_scaler_array(name, values):
+    """Validate one two-value target-scaler parameter."""
+
+    array = np.asarray(values, dtype=np.float64)
+    if array.shape != (2,):
+        raise ValueError(f"{name} must contain exactly two values.")
+    if not np.isfinite(array).all():
+        raise ValueError(f"{name} contains a non-finite value.")
+    return array
+
+def inverse_standardize_targets(standardized_values, target_mean, target_scale):
+    """Convert standardized [displacement, velocity] values to physical units."""
+
+    standardized = _as_float_array(
+        "standardized_values", standardized_values, expected_columns=2
+    )
+    mean = _as_scaler_array("target_mean", target_mean)
+    scale = _as_scaler_array("target_scale", target_scale)
+    if np.any(scale <= 0):
+        raise ValueError("target_scale values must be greater than zero.")
+    return standardized * scale + mean
+
+def standardize_targets(physical_values, target_mean, target_scale):
+    """Convert physical [displacement, velocity] values to standardized units."""
+
+    physical = _as_float_array("physical_values", physical_values, expected_columns=2)
+    mean = _as_scaler_array("target_mean", target_mean)
+    scale = _as_scaler_array("target_scale", target_scale)
+    if np.any(scale <= 0):
+        raise ValueError("target_scale values must be greater than zero.")
+    return (physical - mean) / scale
 
 if __name__ == "__main__":
     train_inputs, train_targets = load_split(
