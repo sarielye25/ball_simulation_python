@@ -1,10 +1,8 @@
 """Train the first model; run with the project environment's Python interpreter."""
 
 import argparse
-import csv
 from dataclasses import asdict
 import hashlib
-import json
 import math
 from pathlib import Path
 import platform
@@ -20,7 +18,10 @@ from checkpoints import load_checkpoint, save_checkpoint, select_checkpoint
 from metrics import baseline_metrics, evaluate
 from neural_network import transmodel
 from stopping import StopState, check_stop
-from training_records import create_run_directory, save_evaluation, save_training_baselines
+from training_records import (
+    append_csv, create_run_directory, save_datasets, save_evaluation,
+    save_training_baselines, write_json,
+)
 
 def prepare_data():
     labels_directory = Path(__file__).resolve().parent / "labels"
@@ -68,21 +69,6 @@ def prepare_data():
         }
 
     return splits, normalization
-
-
-def write_json(path, values):
-    """Write human-readable run metadata, rejecting non-finite numbers."""
-    path.write_text(json.dumps(values, indent=2, allow_nan=False), encoding="utf-8")
-
-
-def append_csv(path, row):
-    """Append one record and close the file so completed updates remain on disk."""
-    needs_header = not path.exists()
-    with path.open("a", newline="", encoding="utf-8") as stream:
-        writer = csv.DictWriter(stream, fieldnames=list(row))
-        if needs_header:
-            writer.writeheader()
-        writer.writerow(row)
 
 
 def train_one_batch(model, optimizer, loss_function, inputs, targets):
@@ -175,11 +161,7 @@ def run_training(*, max_updates=None, run_directory=None):
     )
     sampler = torch.Generator(device="cpu").manual_seed(config.seed)
     stop_state = StopState()
-    if run_directory is None:
-        run_directory = create_run_directory()
-    else:
-        run_directory = Path(run_directory)
-        run_directory.mkdir(parents=True, exist_ok=False)
+    run_directory = create_run_directory(run_directory)
     run_config = {
         name: str(value) if isinstance(value, Path) else value
         for name, value in vars(config).items()
@@ -187,11 +169,23 @@ def run_training(*, max_updates=None, run_directory=None):
         and isinstance(value, (str, int, float, bool, tuple, dict, Path))
     }
     run_config["max_updates"] = update_limit
-    data_identity = {
-        name: {"sha256": split["sha256"], "row_ids": split["row_ids"]}
-        for name, split in splits.items()
-    }
+    data_identity = save_datasets(
+        run_directory, splits, config.input_columns, config.target_columns,
+    )
     write_json(run_directory / "run.json", {
+        "format_version": 1,
+        "artifacts": {
+            "evaluations": "evaluations.csv", "events": "evaluation_events.csv",
+            "batches": "batches.csv", "baselines": "baselines.csv",
+            "termination": "termination.json",
+            "checkpoint_index": f"{config.checkpoint_subdirectory}/index.json",
+            "figures": "figures", "exports": "exports",
+        },
+        "model_config": {"widths": [4, 32, 32, 2], "activation": "ReLU"},
+        "fixed_parameters": {"mass_kg": 1.0, "gravity_m_s2": 9.81,
+                             "mu_s": 0.4, "mu_k": 0.3},
+        "units": dict(zip(config.input_columns + config.target_columns,
+                          ("m/s", "N", "s", "s", "m", "m/s"))),
         "config": run_config, "normalization": normalization,
         "data_identity": data_identity,
         "software": {"python": platform.python_version(), "numpy": np.__version__,

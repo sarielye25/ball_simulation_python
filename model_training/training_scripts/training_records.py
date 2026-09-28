@@ -2,7 +2,11 @@
 
 import csv
 from datetime import datetime
+import hashlib
+import json
+import os
 from pathlib import Path
+import tempfile
 
 from config import checkpoint_subdirectory, training_data_dir
 
@@ -19,14 +23,71 @@ PASS_FIELDS = tuple(f"pass_rate_{name}" for name in ("coarse", "intermediate", "
 FIELDS = ("update", "split", "predictor", "scope") + METRIC_FIELDS + PASS_FIELDS
 
 
-def create_run_directory():
+def create_run_directory(run_directory=None):
     """Create a separate directory for each run without overwriting older runs."""
 
-    run_directory = TRAINING_DATA_DIR / datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+    run_directory = (Path(run_directory) if run_directory is not None else
+                     TRAINING_DATA_DIR / datetime.now().strftime("%Y%m%d_%H%M%S_%f"))
     run_directory.mkdir(parents=True, exist_ok=False)
     (run_directory / checkpoint_subdirectory).mkdir()
     (run_directory / "figures").mkdir()
+    (run_directory / "datasets").mkdir()
+    (run_directory / "exports").mkdir()
     return run_directory
+
+
+def write_json(path, values):
+    """Publish complete JSON documents atomically for independent readers."""
+    path = Path(path)
+    encoded = json.dumps(values, indent=2, allow_nan=False).encode("utf-8")
+    descriptor, temporary = tempfile.mkstemp(dir=path.parent, suffix=".tmp")
+    try:
+        with os.fdopen(descriptor, "wb") as stream:
+            stream.write(encoded)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(temporary, path)
+    finally:
+        Path(temporary).unlink(missing_ok=True)
+
+
+def append_csv(path, row):
+    """Append a complete record, enforcing the existing column order."""
+    path = Path(path)
+    has_header = path.exists() and path.stat().st_size > 0
+    if has_header:
+        with path.open(newline="", encoding="utf-8") as stream:
+            if next(csv.reader(stream)) != list(row):
+                raise ValueError(f"Unexpected CSV columns in {path}.")
+    with path.open("a", newline="", encoding="utf-8") as stream:
+        writer = csv.DictWriter(stream, fieldnames=list(row))
+        if not has_header:
+            writer.writeheader()
+        writer.writerow(row)
+
+
+def save_datasets(run_directory, splits, input_columns, target_columns):
+    """Freeze the physical rows used by this run for portable failure inspection."""
+    identity = {}
+    fields = ("row_id", "motion_group", *input_columns, *target_columns)
+    for name in ("train", "validation"):
+        split = splits[name]
+        path = Path(run_directory) / "datasets" / f"{name}.csv"
+        with path.open("x", newline="", encoding="utf-8") as stream:
+            writer = csv.writer(stream)
+            writer.writerow(fields)
+            for row_id, group, inputs, targets in zip(
+                split["row_ids"], split["groups"], split["physical_inputs"],
+                split["physical_targets"], strict=True,
+            ):
+                writer.writerow((row_id, group, *inputs, *targets))
+        identity[name] = {
+            "sha256": split["sha256"], "row_ids": split["row_ids"],
+            "snapshot": path.relative_to(run_directory).as_posix(),
+            "snapshot_sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+            "rows": len(split["row_ids"]),
+        }
+    return identity
 
 
 def _summary_rows(update, split, predictor, result):
