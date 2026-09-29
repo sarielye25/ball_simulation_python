@@ -1,4 +1,4 @@
-# Cuboid Motion — Progress & Next Steps
+# Cuboid Motion Simulation Model — Progress & Next Steps
 
 Learn to predict one-dimensional cuboid motion: `[initial velocity, force, push duration, observation time] → [displacement, final velocity]`. Mass and friction stay fixed.
 
@@ -8,13 +8,7 @@ Learn to predict one-dimensional cuboid motion: `[initial velocity, force, push 
 - Prepared 10,000 examples: 8,000 training / 1,000 validation / 1,000 test.
 - Defined the 4 → 32 → 32 → 2 neural network.
 - Added checkpoint support; planned training, evaluation, and learning-rate control.
-
-## Next for the first training
-
-1. Verify physics cases, data, normalization, and a small training run.
-2. Integrate the loop, Adam, scaled MSE, and learning-rate reductions after stalled progress.
-3. Build Qt software to demonstrate training results. Select the best model and use it for test group.
-4. Animate reference versus learned motion and training progress in 3D. [To be discussed]
+- Built a software for demonstrating the result: loss curve, data.
 
 ## For more controlled experiments
 
