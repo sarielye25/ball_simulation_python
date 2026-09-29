@@ -6,6 +6,7 @@
 | --- | --- |
 | `<group_id>/group.json` | Protocol version, group ID, display name, description, training-source identifier. |
 | `<group_id>/runs/<run_id>/run.json` | Published run manifest: identity, status, splits, columns, units, tolerances, checkpoints, file paths, byte counts, SHA-256 hashes. |
+| `run.json` optional metadata | New runs also publish `run_config`, `model_config`, and training-fitted `normalization`; older runs remain readable without them. |
 | `<group_id>/runs/<run_id>/datasets/<split_id>.csv` | Frozen samples: `row_id`, `motion_group`, input columns, target columns. Values use physical units. |
 | `<group_id>/runs/<run_id>/evaluations.csv` | Metrics by `update`, `split`, `predictor`, and `scope`. Train and validation rows share this file. |
 | `<group_id>/runs/<run_id>/baselines.csv` | Training-set reference metrics for `zero` and `constant_velocity` predictors. |

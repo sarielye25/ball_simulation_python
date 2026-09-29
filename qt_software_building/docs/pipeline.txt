@@ -5,7 +5,7 @@
 model_training/data/<group_id>/
   group.json                         稳定组 ID、名称、说明及来源
   runs/<run_id>/
-    run.json                         唯一发布入口：版本、身份、状态、split、列、单位、容差、文件引用及完整性
+    run.json                         唯一发布入口：版本、身份、状态、split、列、单位、容差、文件引用及完整性；新运行含配置和归一化信息
     datasets/<split_id>.csv          不可变样本快照：row_id、组别、输入和目标
     evaluations.csv                  各 update、split、scope 的指标；train 和 validation 同文件
     baselines.csv                    基线（若适用）
@@ -37,7 +37,7 @@ evaluations.csv 已在同一文件中用 split 列区分 train 和 validation。
 旧实验通过导入工具迁移，保留原件；test 数据默认不发布给 Qt。
 
 4. Qt 端当前状态
-旧 v1/v2 查看器和手动打包原型已移除。新 app.py 默认浏览 model_training/data/，通过独立读取层校验共享 run.json，并显示曲线及失败表。
+旧 v1/v2 查看器和手动打包原型已移除。新 app.py 默认浏览 model_training/data/，通过独立读取层校验共享 run.json，并显示训练、验证或双曲线、可展开的 checkpoint 分组摘要、跨组同 update 的 run 对比及失败样本。数据或归一化不同时显示提示。
 sample_training 的最新短运行已由 import_sample_run.py 转为共享协议；该工具在训练环境运行，Qt 进程不导入训练模型。原始运行仍保留旧格式。
 sample_training 和 first_training_protocol 的新运行自动发布共享协议；既有旧运行不会自动转换。
 

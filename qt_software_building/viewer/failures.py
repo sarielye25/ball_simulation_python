@@ -43,7 +43,7 @@ def analyze_failures(snapshot: RunSnapshot, split_id: str, checkpoint_id: str, r
         values = predictions[sample.row_id]
         signed = tuple(predicted - target for predicted, target in zip(values, sample.targets, strict=True))
         absolute = tuple(abs(value) for value in signed)
-        passed = all(error <= limit for error, limit in zip(absolute, tolerance, strict=True))
+        passed = all(error < limit for error, limit in zip(absolute, tolerance, strict=True))
         severity = max(error / limit for error, limit in zip(absolute, tolerance, strict=True))
         rows.append(FailureRow(sample.row_id, sample.motion_group, sample.inputs, sample.targets, values, signed, absolute, passed, severity))
     passed_count = sum(row.passed for row in rows)

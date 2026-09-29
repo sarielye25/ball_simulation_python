@@ -16,6 +16,7 @@ model_training/data/<group_id>/runs/<run_id>/predictions/<checkpoint_id>/<split_
 group_id, run_id, split_id, checkpoint_id: nonempty ASCII letters/digits/_/-; IDs match directory names and are unique in their scope.
 group.json: {protocol_version: 1, group_id, name, description, source}.
 run.json required: protocol_version: 1; group_id; run_id; generation: nonnegative integer; status: running|completed|aborted; purpose: diagnostic|training; splits; columns; tolerances; stopping_ruler; artifacts; checkpoints; selected_checkpoint: ID|null; termination: object|null.
+Optional run_config, model_config, and normalization expose the recorded training settings, model description, and training-fitted input/target means and scales to read-only viewers. Legacy runs may omit them. Normalization vectors follow the ordered input/target columns and scales are positive.
 generation starts at 0 and increments once per successful publication. An unsupported version is an error.
 
 3. Splits and numeric schema
@@ -24,7 +25,7 @@ More validation splits use new IDs. Only declared splits appear in metrics or pr
 columns: {inputs: ordered distinct names, targets: ordered distinct names, units: map for every input/target}.
 Current cuboid inputs: v0_m_s,force_N,force_duration_s,observation_time_s.
 Current cuboid targets: displacement_m,v_final_m_s. Units: m/s,N,s,s,m,m/s.
-tolerances: ruler ID -> positive finite thresholds in target order. A row passes only if every absolute target error is <= its threshold.
+tolerances: ruler ID -> positive finite thresholds in target order. A row passes only if every absolute target error is < its threshold.
 All stored values and tolerances use physical units; normalized values are training-private.
 
 4. Dataset and predictions

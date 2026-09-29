@@ -30,8 +30,9 @@ def artifacts(root):
     }
 
 
-def initial_manifest(root, splits, config, diagnostic):
-    return {
+def initial_manifest(root, splits, config, diagnostic, *, run_config=None,
+                     normalization=None, model_config=None):
+    manifest = {
         "protocol_version": 1,
         "group_id": config.training_data_dir.parent.name,
         "run_id": root.name,
@@ -61,6 +62,16 @@ def initial_manifest(root, splits, config, diagnostic):
         "selected_checkpoint": None,
         "termination": None,
     }
+    if run_config is not None:
+        manifest["run_config"] = run_config
+    if normalization is not None:
+        manifest["normalization"] = {
+            name: np.asarray(values, dtype=float).tolist()
+            for name, values in normalization.items()
+        }
+    if model_config is not None:
+        manifest["model_config"] = model_config
+    return manifest
 
 
 def save_predictions(root, checkpoint_path, model, splits, normalization, target_columns):

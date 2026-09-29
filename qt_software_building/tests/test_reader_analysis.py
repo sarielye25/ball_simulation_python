@@ -75,6 +75,28 @@ class ReaderAnalysisTests(unittest.TestCase):
         self.assertEqual([row.row_id for row in report.rows], ["a", "b"])
         self.assertEqual(report.rows[1].signed_errors, (1.0,))
 
+    def test_optional_experiment_metadata(self):
+        self.manifest["run_config"] = {"learning_rate": 0.001, "seed": 42}
+        self.manifest["model_config"] = {"widths": [1, 1]}
+        self.manifest["normalization"] = {
+            "input_mean": [-1], "input_scale": [2],
+            "target_mean": [-3], "target_scale": [4],
+        }
+        self.publish()
+        snapshot = load_run(self.data_root, "demo", "first")
+        self.assertEqual(snapshot.run_config["seed"], 42)
+        self.assertEqual(snapshot.normalization["target_mean"], (-3.0,))
+
+    def test_tolerance_boundary_is_failure(self):
+        descriptor = self.manifest["checkpoints"][0]["predictions"]["validation"]
+        path = self.run_dir / descriptor["file"]
+        _csv(path, ["row_id", "pred_target"], [["b", 4.5], ["a", 2.2]])
+        self.manifest["checkpoints"][0]["predictions"]["validation"] = _descriptor(path, self.run_dir)
+        self.publish()
+        report = analyze_failures(load_run(self.data_root, "demo", "first"),
+                                  "validation", "update_000000", "coarse")
+        self.assertEqual(report.failed, 1)
+
     def test_uncommitted_tail_is_ignored(self):
         with self.metrics_path.open("ab") as stream:
             stream.write(b"unfinished,not,a,complete,row")

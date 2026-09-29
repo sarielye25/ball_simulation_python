@@ -27,7 +27,11 @@ class WindowTests(unittest.TestCase):
                 time.sleep(0.01)
             self.assertIsNotNone(window.snapshot)
             self.assertEqual(window.snapshot.status, "completed")
+            self.assertGreaterEqual(window.split_combo.findData("train+validation"), 0)
+            self.assertIn("Stopping reason:", window.status_label.text())
+            self.assertIn("Generation:", window.status_label.text())
             window.split_combo.setCurrentIndex(window.split_combo.findData("validation"))
+            window.tabs.setCurrentWidget(window.failures_tab)
             self.assertEqual(window.table.rowCount(), 40)
             self.assertIn("40 failed / 40 samples", window.summary_label.text())
         finally:
@@ -44,6 +48,10 @@ class WindowTests(unittest.TestCase):
                 self.application.processEvents()
                 time.sleep(0.01)
             self.assertIsNotNone(window.snapshot)
+            window.metrics_toggle.click()
+            self.assertTrue(window.metrics_table.isHidden())
+            window.metrics_toggle.click()
+            self.assertFalse(window.metrics_table.isHidden())
             changes = (
                 (window.split_combo, "validation"),
                 (window.metric_combo, "displacement_mae_m"),

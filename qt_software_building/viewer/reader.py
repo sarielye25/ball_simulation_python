@@ -48,6 +48,11 @@ def _number(value, context, positive=False):
     return float(value)
 
 
+def _finite_number(value, context):
+    _require(type(value) in (int, float) and math.isfinite(value), context, "invalid number")
+    return float(value)
+
+
 def _text(value, context, allow_empty=False):
     _require(isinstance(value, str) and (allow_empty or bool(value)), context, "invalid text")
     return value
@@ -237,6 +242,21 @@ def load_run(data_root, group_id, run_id):
         tolerances[ruler] = tuple(_number(value, root, True) for value in values)
     stopping_ruler = manifest.get("stopping_ruler")
     _require(stopping_ruler in tolerances, root, "invalid stopping ruler")
+    run_config = manifest.get("run_config")
+    if run_config is not None:
+        run_config = _object(run_config, root)
+    model_config = manifest.get("model_config")
+    if model_config is not None:
+        model_config = _object(model_config, root)
+    normalization = manifest.get("normalization")
+    if normalization is not None:
+        normalization = _object(normalization, root)
+        for name, size in (("input_mean", len(inputs)), ("input_scale", len(inputs)),
+                           ("target_mean", len(targets)), ("target_scale", len(targets))):
+            values = _array(normalization.get(name), root)
+            _require(len(values) == size, root, f"invalid {name} length")
+            normalization[name] = tuple(_number(value, root, True) if name.endswith("scale")
+                                        else _finite_number(value, root) for value in values)
 
     split_items = _array(manifest.get("splits"), root)
     _require(bool(split_items), root, "no splits")
@@ -308,4 +328,4 @@ def load_run(data_root, group_id, run_id):
             _text(termination.get("message"), root, True)
     if generation == 0:
         _require(status == "running" and not checkpoints and not metrics and selected is None, root, "invalid initial generation")
-    return RunSnapshot(group, run_id, generation, status, purpose, inputs, targets, dict(units), tolerances, stopping_ruler, tuple(splits), samples, tuple(metrics), tuple(checkpoints), predictions, selected, termination)
+    return RunSnapshot(group, run_id, generation, status, purpose, inputs, targets, dict(units), tolerances, stopping_ruler, tuple(splits), samples, tuple(metrics), tuple(checkpoints), predictions, selected, termination, run_config, normalization, model_config)

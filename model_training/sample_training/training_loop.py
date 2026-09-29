@@ -176,7 +176,11 @@ def run_training(*, max_updates=None, run_directory=None):
     data_identity = save_datasets(
         run_directory, splits, config.input_columns, config.target_columns,
     )
-    manifest = initial_manifest(run_directory, splits, config, max_updates is not None)
+    manifest = initial_manifest(
+        run_directory, splits, config, max_updates is not None,
+        run_config=run_config, normalization=normalization,
+        model_config={"widths": [4, 32, 32, 2], "activation": "ReLU"},
+    )
     publish(run_directory, manifest, write_json)
     update = 0
     epoch = 0

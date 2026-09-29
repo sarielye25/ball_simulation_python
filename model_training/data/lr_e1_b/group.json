@@ -1,0 +1,7 @@
+{
+  "protocol_version": 1,
+  "group_id": "lr_e1_b",
+  "name": "Learning rate experiment E1-B",
+  "description": "Smaller scheduler improvement threshold with shared frozen labels.",
+  "source": "model_training/first_training_experiments_lr/scripts_e1-b"
+}

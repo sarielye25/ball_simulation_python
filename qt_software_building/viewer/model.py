@@ -71,6 +71,9 @@ class RunSnapshot:
     predictions: dict[tuple[str, str], tuple[Prediction, ...]]
     selected_checkpoint: str | None
     termination: dict | None
+    run_config: dict | None = None
+    normalization: dict | None = None
+    model_config: dict | None = None
 
     def split(self, split_id: str) -> Split:
         return next(split for split in self.splits if split.id == split_id)
