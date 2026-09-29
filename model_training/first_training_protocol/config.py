@@ -36,7 +36,7 @@ tolerances = {
 }
 
 # data and output settings
-training_data_dir = Path(__file__).resolve().parent / "training_data"
+training_data_dir = Path(__file__).resolve().parent.parent / "data" / "first_training_protocol" / "runs"
 checkpoint_subdirectory = "checkpoints"
 #data_dir =   to be decided
 #run_dir =   to be decided

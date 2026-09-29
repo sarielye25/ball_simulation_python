@@ -1,0 +1,54 @@
+数据流水线与 Qt 软件结构
+2026-09-28；依据 qt_building_plan.md。共用 run 格式、发布规则、Qt 读取层及协议 v1 已确认；具体字段见 shared_data_contract.txt，尚未实施。
+
+1. 共用数据目录
+model_training/data/<group_id>/
+  group.json                         稳定组 ID、名称、说明及来源
+  runs/<run_id>/
+    run.json                         唯一发布入口：版本、身份、状态、split、列、单位、容差、文件引用及完整性
+    datasets/<split_id>.csv          不可变样本快照：row_id、组别、输入和目标
+    evaluations.csv                  各 update、split、scope 的指标；train 和 validation 同文件
+    baselines.csv                    基线（若适用）
+    evaluation_events.csv            评估及学习率事件（若适用）
+    batches.csv                      批次记录（Qt 按需读取）
+    checkpoints/index.json          训练侧模型索引
+    checkpoints/update_*.pt         模型及续训状态，Qt 不读取
+    predictions/<checkpoint>/<split_id>.csv  不可变预测，以 row_id 关联样本快照
+    termination.json                 结束或中止详情（若存在）
+
+每组一个目录，每次训练一个新 run。训练与 Qt 使用同一份 run，不复制第二套指标或数据。
+Qt 只读清单已发布的部分，不加载模型或训练组源码。数据根目录是 model_training/data/；包内使用相对路径，以后可配置到其他磁盘。
+未来增加验证数据组时，run.json 声明新 split_id；同一个 evaluations.csv 用 split 列区分指标。
+
+2. 发布与并发读取
+训练期间 evaluations.csv 等日志会追加。run.json 对每个可追加文件记录“已提交前缀”的字节长度和 SHA-256。
+Qt 只读取该前缀，校验哈希、表头与完整行；忽略尚未发布的尾部。训练绝不修改已提交前缀。
+样本快照和各 checkpoint 的预测文件一经发布不可修改；清单记录完整文件哈希。
+每次评估：写日志及预测 → 校验引用和 CSV 行边界 → 写完整临时清单 → 原子替换 run.json。
+Qt 因此读取旧版或新版完整清单；发布失败时仍可读取上一完整版本。
+结束或中止时以相同规则发布状态；缺少结束信息时显示未完成。
+
+3. 训练端当前实际输出
+sample_training 和 first_training_protocol 的默认目录为 model_training/data/<group_id>/runs/<时间戳>/；新运行直接发布共享协议 v1。旧运行保留原格式：
+run.json、datasets/train.csv、datasets/validation.csv、evaluations.csv、baselines.csv、
+evaluation_events.csv、batches.csv、checkpoints/index.json、checkpoints/update_*.pt、termination.json。
+evaluations.csv 已在同一文件中用 split 列区分 train 和 validation。
+每次评估后写入完整逐样本预测 CSV，并原子发布含已提交前缀的 run.json；训练期间 Qt 可读取已发布的代次。
+旧实验通过导入工具迁移，保留原件；test 数据默认不发布给 Qt。
+
+4. Qt 端当前状态
+旧 v1/v2 查看器和手动打包原型已移除。新 app.py 默认浏览 model_training/data/，通过独立读取层校验共享 run.json，并显示曲线及失败表。
+sample_training 的最新短运行已由 import_sample_run.py 转为共享协议；该工具在训练环境运行，Qt 进程不导入训练模型。原始运行仍保留旧格式。
+sample_training 和 first_training_protocol 的新运行自动发布共享协议；既有旧运行不会自动转换。
+
+5. 已确认的 Qt 上层结构
+训练循环 → 共用协议的写入/发布器 → data。
+窗口操作 → 控制器 → 后台任务 → 只读读取层（浏览、校验、协议版本适配）→ 稳定内存数据。
+内存数据 → 曲线分析（筛选指标、准备点/标签/单位）→ Qt 图表。
+内存数据 → 失败分析（按 row_id 关联、应用容差、准备摘要/失败行）→ Qt 表格。
+读取层独自理解 CSV 布局、提交前缀和文件版本；输出组/run 身份与状态、按 ID 描述的 split、指标、checkpoint、样本、预测及字段元数据。
+内存模型只定义数据结构，不是缓存。两条分析路径只处理内存数据；图表和表格不打开 data 文件、不加载模型或训练组源码。
+新增验证 split 由清单、内存对象和选择器驱动；通用分析和绘图按 split ID 工作。
+仅改变存储格式时，在读取层适配并保持内存契约稳定；新增结果语义或展示形式时，按需扩展契约及上层界面。
+以内存契约测试检查多个 split、版本变化、缺失数据和损坏文件。具体模块文件名及界面布局仍待讨论。
+首版忽略缓存；实际出现明显加载或切换问题时再评估解决。若引入缓存，须随已发布 run.json 的版本/内容变化失效。

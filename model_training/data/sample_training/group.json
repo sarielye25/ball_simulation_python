@@ -1,0 +1,7 @@
+{
+  "protocol_version": 1,
+  "group_id": "sample_training",
+  "name": "Sample training",
+  "description": "Short diagnostic training group for the Qt viewer.",
+  "source": "model_training/sample_training"
+}

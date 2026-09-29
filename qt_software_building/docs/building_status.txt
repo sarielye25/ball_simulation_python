@@ -1,0 +1,9 @@
+2026-09-28
+
+本次：确认训练与 Qt 共用 run 数据结构、已提交前缀和原子清单发布规则，以及 Qt 读取层到稳定内存契约的边界；同步更新 qt_building_plan.md 与 pipeline.txt。
+已移除旧 v1/v2 查看器、手动打包原型、对应测试及过期方案资料。软件 .venv 保留；未更改训练行为或搬移数据。
+现状：数据根目录为 model_training/data/；最新 sample_training 短运行已转换为共享协议，并由新 Qt 窗口成功读取和展示。原始短运行仍保留旧训练 v1。shared_data_contract.txt 的协议 v1 已采纳。首版忽略缓存，实际出现问题后再评估。
+sample_training 和 first_training_protocol 的默认输出路径指向 model_training/data/<group_id>/runs/；training_scripts 按用户要求暂不建立数据组、保留原默认路径。运行数据允许纳入 Git。迁移前的短运行保留旧 run.json 中的原始 training_data_dir 字段；其产物引用为相对路径。旧 Qt 目录中仅剩空 data 文件夹，删除空文件夹的命令被策略阻止。
+已实现：无 Qt 依赖的 v1 只读读取层、稳定内存模型、曲线分析和失败分析，并以小型测试包验证；尚未接入真实训练发布。
+已实现：Qt 入口、组/run/split/checkpoint/指标/容差选择、曲线和失败表；data/README.md 记录各原始文件内容。待实现：训练循环自动写入及发布共享协议、更多训练组转换和完整端到端验证。
+后续处理：软件目录改名后，现有 .venv 安装新工具出现目录路径冲突；待核对虚拟环境内记录的旧路径，并决定修复或重建环境。当前不调整该环境。

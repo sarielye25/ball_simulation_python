@@ -1,0 +1,69 @@
+Shared data contract v1 — implemented for sample_training and first_training_protocol
+
+1. Layout (data root: model_training/data/)
+model_training/data/<group_id>/group.json
+model_training/data/<group_id>/runs/<run_id>/run.json
+model_training/data/<group_id>/runs/<run_id>/datasets/<split_id>.csv
+model_training/data/<group_id>/runs/<run_id>/evaluations.csv
+model_training/data/<group_id>/runs/<run_id>/baselines.csv                  optional
+model_training/data/<group_id>/runs/<run_id>/evaluation_events.csv          optional
+model_training/data/<group_id>/runs/<run_id>/batches.csv                    optional
+model_training/data/<group_id>/runs/<run_id>/checkpoints/index.json        training only
+model_training/data/<group_id>/runs/<run_id>/checkpoints/update_*.pt       training only
+model_training/data/<group_id>/runs/<run_id>/predictions/<checkpoint_id>/<split_id>.csv
+
+2. Identity and manifest
+group_id, run_id, split_id, checkpoint_id: nonempty ASCII letters/digits/_/-; IDs match directory names and are unique in their scope.
+group.json: {protocol_version: 1, group_id, name, description, source}.
+run.json required: protocol_version: 1; group_id; run_id; generation: nonnegative integer; status: running|completed|aborted; purpose: diagnostic|training; splits; columns; tolerances; stopping_ruler; artifacts; checkpoints; selected_checkpoint: ID|null; termination: object|null.
+generation starts at 0 and increments once per successful publication. An unsupported version is an error.
+
+3. Splits and numeric schema
+Each split: {id, name, role: train|validation, dataset: immutable descriptor, rows: positive integer}.
+More validation splits use new IDs. Only declared splits appear in metrics or predictions; reserved test data is excluded.
+columns: {inputs: ordered distinct names, targets: ordered distinct names, units: map for every input/target}.
+Current cuboid inputs: v0_m_s,force_N,force_duration_s,observation_time_s.
+Current cuboid targets: displacement_m,v_final_m_s. Units: m/s,N,s,s,m,m/s.
+tolerances: ruler ID -> positive finite thresholds in target order. A row passes only if every absolute target error is <= its threshold.
+All stored values and tolerances use physical units; normalized values are training-private.
+
+4. Dataset and predictions
+Dataset header: row_id,motion_group,<ordered inputs>,<ordered targets>.
+Prediction header: row_id,pred_<target_1>,...,pred_<target_n>.
+row_id is nonempty and unique within a split. Join key: (split_id,row_id).
+Prediction IDs must match the split's dataset IDs exactly, once each. All numeric cells are finite and present.
+Snapshots and prediction files are immutable after publication.
+
+5. Metrics
+evaluations.csv and optional baselines.csv use the existing wide header:
+update,split,predictor,scope,count,standardized_mse,displacement_standardized_mse,velocity_standardized_mse,displacement_loss_contribution,velocity_loss_contribution,displacement_mae_m,displacement_p95_m,displacement_max_m,velocity_mae_m_s,velocity_p95_m_s,velocity_max_m_s,pass_rate_coarse,pass_rate_intermediate,pass_rate_fine
+All train/validation splits share evaluations.csv; split distinguishes them. predictor=model.
+Baseline predictors: zero|constant_velocity; split=train; update=0.
+Key (update,split,predictor,scope) is unique. update/count are nonnegative integers; pass rates are in [0,1]. Other metric values are finite and nonnegative. Empty metric cells mean undefined only when count=0.
+scope: overall|breakaway|motion_group value. Cuboid-specific metric names belong to storage v1; the in-memory model uses named metrics.
+
+6. Checkpoints and status
+Checkpoint descriptor: {id, update, predictions: {split_id: immutable descriptor}, model_file: relative path|null}.
+Checkpoint updates increase strictly. Qt does not read model_file, index.json, or .pt files.
+selected_checkpoint is null or references a published checkpoint.
+At creation: status=running, generation=0, no evaluations/checkpoints/selection/termination.
+completed termination: {reason, final_update, selected_checkpoint}; selection required.
+aborted termination: {reason, last_completed_update, message}; prior published results remain readable.
+If no final publication occurs, Qt shows running/unfinished. Missing optional data is unavailable; a missing referenced file is corruption.
+
+7. File descriptors and publication
+Paths are run-relative with `/`; reject absolute paths, `..`, and escapes through links.
+Immutable descriptor: {file, bytes, sha256}; hash covers the complete file.
+Append-only descriptor: {file, committed_bytes, sha256}; hash covers exactly that prefix.
+artifacts.evaluations: append-only descriptor|null; evaluation_events/batches: optional append-only descriptors; baselines: optional immutable descriptor.
+CSV: UTF-8, comma-separated, exact header, LF or CRLF. A committed prefix ends after a complete record and line ending. Ignore bytes after committed_bytes.
+Single writer per run. Write/flush/validate all referenced files and complete evaluation rows; write/flush a temporary manifest in the run directory; atomically replace run.json last.
+Never modify committed bytes or overwrite published immutable files. On failure retain the previous run.json; repair uncommitted tails before the next publication.
+
+8. Reader output
+Version-independent RunSnapshot: identity/status/generation; ordered field names and units; tolerances; split descriptors; checkpoint descriptors/selection; named metric records with value-or-missing; per-split sample rows; per-checkpoint/split prediction rows or explicit unavailable state; termination or absent.
+Curve analysis receives metrics and returns points/labels/units. Failure analysis receives samples, predictions, and ruler, then returns errors, pass flags, summary, and failure rows. Qt views consume these results only.
+
+9. Required rejection and tests
+Reject invalid version/identity/path/hash/length/header/number, duplicate key/ID, unknown split, and incomplete prediction join. Show the affected run/file; do not infer results from .pt or substitute zeros.
+Test multiple validation splits, old/new manifest publication, uncommitted CSV tails, corrupt committed prefixes, missing prediction IDs, moved data root, and unsupported versions.

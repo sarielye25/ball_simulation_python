@@ -1,9 +1,0 @@
-Build status — 2026-09-28
-
-Implemented source files for the read-only Qt training viewer: artifact loading and identity checks, checkpoint inference, curves, failure filtering/export, and a background worker. README and initial tests are present.
-
-Blocking issue: dependencies could not be installed. The sandbox blocked access to PyPI and the PyTorch CPU wheel index (WinError 10013). Retrying the pip install with elevated network access was rejected before execution because the automatic approval reviewer has no configured model: "未找到模型配置: codex-auto-review". This was a review-system configuration failure, not a determination that the install was unsafe.
-
-Validation completed: Python compileall for app.py, viewer/, and tests/ passed; git diff --check passed.
-
-Still needed after network approval works: install pinned dependencies into this software's .venv, run pip check and pytest, freeze requirements-lock.txt, run and inspect the GUI at required DPI/window sizes, complete demo fixture and tests, and validate with a real stopped training run when one is available. The current --demo option reports that its bundled fixture is unavailable.

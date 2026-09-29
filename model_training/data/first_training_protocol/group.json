@@ -1,0 +1,7 @@
+{
+  "protocol_version": 1,
+  "group_id": "first_training_protocol",
+  "name": "First training protocol",
+  "description": "First cuboid-motion training implementation.",
+  "source": "model_training/first_training_protocol"
+}

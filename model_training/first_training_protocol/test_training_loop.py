@@ -22,19 +22,21 @@ class TrainingLoopChecks(unittest.TestCase):
             run = Path(directory) / "smoke"
             training_loop.run_training(max_updates=64, run_directory=run)
             metadata = json.loads((run / "run.json").read_text())
-            self.assertEqual(metadata["format_version"], 1)
+            self.assertEqual(metadata["protocol_version"], 1)
+            self.assertEqual(metadata["status"], "completed")
             for folder in ("datasets", "checkpoints", "figures", "exports"):
                 self.assertTrue((run / folder).is_dir())
             self.assertFalse((run / "datasets" / "test.csv").exists())
             for split, expected_count in (("train", 8000), ("validation", 1000)):
-                identity = metadata["data_identity"][split]
-                snapshot = run / identity["snapshot"]
+                identity = next(item for item in metadata["splits"] if item["id"] == split)
+                snapshot = run / identity["dataset"]["file"]
                 self.assertEqual(hashlib.sha256(snapshot.read_bytes()).hexdigest(),
-                                 identity["snapshot_sha256"])
+                                 identity["dataset"]["sha256"])
                 with snapshot.open(newline="", encoding="utf-8") as stream:
                     rows = list(csv.DictReader(stream))
                 self.assertEqual(len(rows), expected_count)
-                self.assertEqual([row["row_id"] for row in rows], identity["row_ids"])
+                self.assertEqual([row["row_id"] for row in rows],
+                                 training_loop.prepare_data()[0][split]["row_ids"])
                 snapshot_inputs, snapshot_targets = training_loop.data.load_split(snapshot)
                 source_inputs, source_targets = training_loop.data.load_split(
                     Path(__file__).parent / "labels" / f"{split}.csv")
