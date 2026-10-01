@@ -1,3 +1,0 @@
-update,epoch,exposures,elapsed_seconds,lr_before,lr_next,scheduler_checked,progress_reference_mse,progress_reference_update,should_stop,reason,selection,meaningful_improvement,patience_reached,max_updates_reached
-0,0,0,0.11700620001647621,0.001,0.001,True,1.1521729698422873,0,False,CONTINUE,,False,False,False
-1,1,128,0.2212559999898076,0.001,0.001,False,1.1424681159552876,1,True,MAX_UPDATES,best_mse,True,False,True

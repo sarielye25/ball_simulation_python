@@ -1,7 +1,0 @@
-{
-  "protocol_version": 1,
-  "group_id": "update_8000",
-  "name": "Update budget experiment 8000",
-  "description": "Original training schedule with a fixed 8000-update budget.",
-  "source": "model_training/first_training_experiments_update/scripts - 8000"
-}

@@ -1,7 +1,0 @@
-{
-  "protocol_version": 1,
-  "group_id": "e4",
-  "name": "E4 additional hidden layer",
-  "description": "E3 schedule with an additional hidden layer in the neural network.",
-  "source": "model_training/first_training_experiments_additional_hidden_layer/run_e4.py"
-}

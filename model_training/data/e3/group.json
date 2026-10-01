@@ -1,7 +1,0 @@
-{
-  "protocol_version": 1,
-  "group_id": "e3",
-  "name": "E3 longer learning-rate patience",
-  "description": "E1-A scheduler patience with five-seed continuous 10000- and 20000-update runs.",
-  "source": "model_training/first_training_experiments_update/run_e3.py"
-}

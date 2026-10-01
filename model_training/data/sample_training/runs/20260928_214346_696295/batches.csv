@@ -1,2 +1,0 @@
-update,epoch,batch_rows,exposures,elapsed_seconds,learning_rate,batch_mse_before_update
-1,1,128,128,0.15887139999540523,0.001,1.0502492189407349
