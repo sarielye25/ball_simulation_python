@@ -57,13 +57,13 @@ OD:
 
 **Results:**
 1. There's massive improvement. 
-2. The improvement of training decreases with the increase of updates.
-
-### Experiment E4：a new neural network with one additional hidden layer
+2. The improvement of training decreases with the increase of updateE：a new neural network with one additional hidden layer
 
 A new structure of training script named **Run Orchestration** is updated. The structure contains a script folder for the original training  loop, and a run_ex.py to toggle the training. In script folder, controlled variables are set. In run_ex.py, seeds, update numbers and comparison making are set.
 
-
+### Experiments E4 and E5: adding additional hidden layers to the neural network.
+**Results:** 
+There's improvements. The improvement from E3 to E4 is 26%, while E4 to E5 is only 4%, which shows that adding layers does not solve the problem.
 
 
 
