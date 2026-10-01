@@ -1,0 +1,15 @@
+{
+  "status": "completed",
+  "update": 8000,
+  "epoch": 127,
+  "exposures": 1015936,
+  "elapsed_seconds": 247.5846787999999,
+  "last_valid_checkpoint": "update_008000.pt",
+  "selected_checkpoint": "update_008000.pt",
+  "should_stop": true,
+  "reason": "MAX_UPDATES",
+  "selection": "best_mse",
+  "meaningful_improvement": false,
+  "patience_reached": false,
+  "max_updates_reached": true
+}

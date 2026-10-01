@@ -1,0 +1,515 @@
+{
+  "format_version": 1,
+  "snapshots": [
+    {
+      "file": "update_000000.pt",
+      "update": 0,
+      "validation_mse": 0.9519009247503791,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_000010.pt",
+      "update": 10,
+      "validation_mse": 0.8701136756654461,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_000020.pt",
+      "update": 20,
+      "validation_mse": 0.786455189892579,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_000050.pt",
+      "update": 50,
+      "validation_mse": 0.4588728571330174,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_000100.pt",
+      "update": 100,
+      "validation_mse": 0.18570600289223996,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_000200.pt",
+      "update": 200,
+      "validation_mse": 0.07854103421035055,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_000300.pt",
+      "update": 300,
+      "validation_mse": 0.04850148103158735,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_000400.pt",
+      "update": 400,
+      "validation_mse": 0.03292625589882853,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_000500.pt",
+      "update": 500,
+      "validation_mse": 0.025485551687413413,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_000600.pt",
+      "update": 600,
+      "validation_mse": 0.02032381532125202,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_000700.pt",
+      "update": 700,
+      "validation_mse": 0.017274638299120453,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_000800.pt",
+      "update": 800,
+      "validation_mse": 0.014041833453747191,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_000900.pt",
+      "update": 900,
+      "validation_mse": 0.012855385589768146,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_001000.pt",
+      "update": 1000,
+      "validation_mse": 0.011694694155721734,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_001100.pt",
+      "update": 1100,
+      "validation_mse": 0.010086251662617722,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_001200.pt",
+      "update": 1200,
+      "validation_mse": 0.009242255685635442,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_001300.pt",
+      "update": 1300,
+      "validation_mse": 0.00810155693817764,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_001400.pt",
+      "update": 1400,
+      "validation_mse": 0.007449975179413351,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_001500.pt",
+      "update": 1500,
+      "validation_mse": 0.006941994706027011,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_001600.pt",
+      "update": 1600,
+      "validation_mse": 0.00634114192582874,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_001700.pt",
+      "update": 1700,
+      "validation_mse": 0.005913929735664031,
+      "validation_pass_rate": 0.001
+    },
+    {
+      "file": "update_001800.pt",
+      "update": 1800,
+      "validation_mse": 0.005793206466982972,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_001900.pt",
+      "update": 1900,
+      "validation_mse": 0.005411567687271906,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_002000.pt",
+      "update": 2000,
+      "validation_mse": 0.00513392508368432,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_002100.pt",
+      "update": 2100,
+      "validation_mse": 0.004877572031861053,
+      "validation_pass_rate": 0.002
+    },
+    {
+      "file": "update_002200.pt",
+      "update": 2200,
+      "validation_mse": 0.004888447169529322,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_002300.pt",
+      "update": 2300,
+      "validation_mse": 0.004678055264953641,
+      "validation_pass_rate": 0.001
+    },
+    {
+      "file": "update_002400.pt",
+      "update": 2400,
+      "validation_mse": 0.004561908100584633,
+      "validation_pass_rate": 0.001
+    },
+    {
+      "file": "update_002500.pt",
+      "update": 2500,
+      "validation_mse": 0.004529338250184162,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_002600.pt",
+      "update": 2600,
+      "validation_mse": 0.004461334586643218,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_002700.pt",
+      "update": 2700,
+      "validation_mse": 0.004460034153880044,
+      "validation_pass_rate": 0.001
+    },
+    {
+      "file": "update_002800.pt",
+      "update": 2800,
+      "validation_mse": 0.0043870368130370175,
+      "validation_pass_rate": 0.001
+    },
+    {
+      "file": "update_002900.pt",
+      "update": 2900,
+      "validation_mse": 0.004373479050547443,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_003000.pt",
+      "update": 3000,
+      "validation_mse": 0.004370002322821799,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_003100.pt",
+      "update": 3100,
+      "validation_mse": 0.004347793770144689,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_003200.pt",
+      "update": 3200,
+      "validation_mse": 0.004350633749284521,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_003300.pt",
+      "update": 3300,
+      "validation_mse": 0.004350815799638286,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_003400.pt",
+      "update": 3400,
+      "validation_mse": 0.004349488996919998,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_003500.pt",
+      "update": 3500,
+      "validation_mse": 0.004343422209372199,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_003600.pt",
+      "update": 3600,
+      "validation_mse": 0.004342830239520153,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_003700.pt",
+      "update": 3700,
+      "validation_mse": 0.0043466385589131205,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_003800.pt",
+      "update": 3800,
+      "validation_mse": 0.0043365954252627325,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_003900.pt",
+      "update": 3900,
+      "validation_mse": 0.0043313405206595375,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_004000.pt",
+      "update": 4000,
+      "validation_mse": 0.004327191358187675,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_004100.pt",
+      "update": 4100,
+      "validation_mse": 0.0043228929239732105,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_004200.pt",
+      "update": 4200,
+      "validation_mse": 0.004329090863412488,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_004300.pt",
+      "update": 4300,
+      "validation_mse": 0.00432329882321591,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_004400.pt",
+      "update": 4400,
+      "validation_mse": 0.004315543154308257,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_004500.pt",
+      "update": 4500,
+      "validation_mse": 0.004316473547055064,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_004600.pt",
+      "update": 4600,
+      "validation_mse": 0.004314565955838171,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_004700.pt",
+      "update": 4700,
+      "validation_mse": 0.004305945660943802,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_004800.pt",
+      "update": 4800,
+      "validation_mse": 0.004305399253182932,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_004900.pt",
+      "update": 4900,
+      "validation_mse": 0.004312814364117799,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_005000.pt",
+      "update": 5000,
+      "validation_mse": 0.004296538544519203,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_005100.pt",
+      "update": 5100,
+      "validation_mse": 0.00428872305190109,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_005200.pt",
+      "update": 5200,
+      "validation_mse": 0.004289424655422691,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_005300.pt",
+      "update": 5300,
+      "validation_mse": 0.004289111343472602,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_005400.pt",
+      "update": 5400,
+      "validation_mse": 0.004282965915218398,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_005500.pt",
+      "update": 5500,
+      "validation_mse": 0.004282569253447573,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_005600.pt",
+      "update": 5600,
+      "validation_mse": 0.004278281259124264,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_005700.pt",
+      "update": 5700,
+      "validation_mse": 0.004274064781465006,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_005800.pt",
+      "update": 5800,
+      "validation_mse": 0.004267826917744161,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_005900.pt",
+      "update": 5900,
+      "validation_mse": 0.004278291000033785,
+      "validation_pass_rate": 0.001
+    },
+    {
+      "file": "update_006000.pt",
+      "update": 6000,
+      "validation_mse": 0.004261282823232547,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_006100.pt",
+      "update": 6100,
+      "validation_mse": 0.0042685458346140145,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_006200.pt",
+      "update": 6200,
+      "validation_mse": 0.004252143352338703,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_006300.pt",
+      "update": 6300,
+      "validation_mse": 0.0042483073657133726,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_006400.pt",
+      "update": 6400,
+      "validation_mse": 0.004249503230861776,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_006500.pt",
+      "update": 6500,
+      "validation_mse": 0.004239643321646453,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_006600.pt",
+      "update": 6600,
+      "validation_mse": 0.004238040910950331,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_006700.pt",
+      "update": 6700,
+      "validation_mse": 0.004236105893872824,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_006800.pt",
+      "update": 6800,
+      "validation_mse": 0.004232258582071286,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_006900.pt",
+      "update": 6900,
+      "validation_mse": 0.004225915102739115,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_007000.pt",
+      "update": 7000,
+      "validation_mse": 0.004226042826393919,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_007100.pt",
+      "update": 7100,
+      "validation_mse": 0.004231925871319344,
+      "validation_pass_rate": 0.001
+    },
+    {
+      "file": "update_007200.pt",
+      "update": 7200,
+      "validation_mse": 0.004222202415327551,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_007300.pt",
+      "update": 7300,
+      "validation_mse": 0.004213223808131963,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_007400.pt",
+      "update": 7400,
+      "validation_mse": 0.004214452621684501,
+      "validation_pass_rate": 0.002
+    },
+    {
+      "file": "update_007500.pt",
+      "update": 7500,
+      "validation_mse": 0.004204439106412957,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_007600.pt",
+      "update": 7600,
+      "validation_mse": 0.004197136093275731,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_007700.pt",
+      "update": 7700,
+      "validation_mse": 0.0042045013696704395,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_007800.pt",
+      "update": 7800,
+      "validation_mse": 0.0041978834104957,
+      "validation_pass_rate": 0.0
+    },
+    {
+      "file": "update_007900.pt",
+      "update": 7900,
+      "validation_mse": 0.00419330940216649,
+      "validation_pass_rate": 0.001
+    },
+    {
+      "file": "update_008000.pt",
+      "update": 8000,
+      "validation_mse": 0.004194285401757834,
+      "validation_pass_rate": 0.002
+    }
+  ],
+  "best_mse": "update_007900.pt",
+  "best_pass_rate": "update_008000.pt",
+  "last": "update_008000.pt",
+  "selected": "update_007900.pt",
+  "ruler": "intermediate",
+  "selection_reason": "MAX_UPDATES"
+}
