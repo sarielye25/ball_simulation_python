@@ -2,3 +2,20 @@
 	this requires change in neural network.py and training_loop.py
 2. rewrite the comparison part. Trace back to e3's data
 3. Route the comparison data to 10.1 controlled experiments;
+
+
+1.	Use E4's neural network structure; compare the current scheduler, constant LR 0.001, and a scheduler with relative threshold 0.001 and unchanged patience.	
+	Whether premature LR decay causes the plateau?
+	This should be a controlled experiment based on E4's script. Ill call them E4-2, E4-3 and E4-4, with the original E4 being E4-1. In the comparison training of the three new groups, i would use three seeds for each and calculate the average general mse for comparison.
+	
+2	Add a controlled fine-tuning phase with loss expressed in physical tolerances	
+	Whether output weighting is limiting useful accuracy
+	
+3	Add physical features or a regime-aware/hybrid model, one change at a time	
+	Whether the representation is the main accuracy bottleneck
+
+4	Compare a wider three-hidden-layer network with the current narrow networks	
+	Whether width gives more reliable gains than depth
+
+5	Add training examples where validation diagnostics show persistent errors	
+	Whether remaining failures reflect inadequate coverage
