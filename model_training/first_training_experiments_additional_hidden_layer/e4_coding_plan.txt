@@ -1,0 +1,4 @@
+1. change the neural network's structure in folder. Rename that folder
+	this requires change in neural network.py and training_loop.py
+2. rewrite the comparison part. Trace back to e3's data
+3. Route the comparison data to 10.1 controlled experiments;

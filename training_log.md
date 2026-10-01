@@ -34,19 +34,37 @@ OD:
 1. Conduct controlled experience to see if prolong lr reduction patience and decrease the changing value would help.
 2. Test if more or less hidden layer would help improve the results.
 
-## First Training Controlled Experiences
+## First Training Controlled Experiments 1
 
-### experiment on learning rate
-Results:
+### Experiment E1: new schedule of learning rate
+**Results:**
 
 1. There is improvement when we prolong the lr reduction patience and lower the reduction value. But that only helps reduce the general mse at 10^-3 level.
 2. There is more improvement when the model goes through more rounds of updates. However, as the update number increases, the impact of it decreases dramatically. When we add updates from 4000 to 10000, the improvement on general mse is only 10^-4 level.
    
-Analysis:
+**Analysis:**
 
 1. These are the not the major cause to the bad training of the model. I must find other elements
 
-Future Experiments:
+**Future Experiments:**
 
 1. Combine E1 and E2, use E1's lr schedule and run more updates again. Call it E3.
 2. Add one and two hidden layers to the neural network, call it E4.
+
+## First Training Controlled Experiments 2
+
+### Experiment E3: new learning rate schedule with prolonged updates
+
+**Results:**
+1. There's massive improvement. 
+2. The improvement of training decreases with the increase of updates.
+
+### Experiment E4：a new neural network with one additional hidden layer
+
+A new structure of training script named **Run Orchestration** is updated. The structure contains a script folder for the original training  loop, and a run_ex.py to toggle the training. In script folder, controlled variables are set. In run_ex.py, seeds, update numbers and comparison making are set.
+
+
+
+
+
+

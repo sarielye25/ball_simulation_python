@@ -1,0 +1,1963 @@
+{
+  "protocol_version": 1,
+  "group_id": "e4",
+  "run_id": "seed_1006",
+  "generation": 105,
+  "status": "completed",
+  "purpose": "training",
+  "splits": [
+    {
+      "id": "train",
+      "name": "Train",
+      "role": "train",
+      "rows": 8000,
+      "dataset": {
+        "file": "datasets/train.csv",
+        "bytes": 1066121,
+        "sha256": "a4ee03547c8b00bb284af1243ccb6f9276f070eec024fc665c083b68cd1c806f"
+      }
+    },
+    {
+      "id": "validation",
+      "name": "Validation",
+      "role": "validation",
+      "rows": 1000,
+      "dataset": {
+        "file": "datasets/validation.csv",
+        "bytes": 137588,
+        "sha256": "fb5bac22ac4b72c25fb7ac4b4770f27783b64e0f23950ec6b543622659e484b4"
+      }
+    }
+  ],
+  "columns": {
+    "inputs": [
+      "v0_m_s",
+      "force_N",
+      "force_duration_s",
+      "observation_time_s"
+    ],
+    "targets": [
+      "displacement_m",
+      "v_final_m_s"
+    ],
+    "units": {
+      "v0_m_s": "m/s",
+      "force_N": "N",
+      "force_duration_s": "s",
+      "observation_time_s": "s",
+      "displacement_m": "m",
+      "v_final_m_s": "m/s"
+    }
+  },
+  "tolerances": {
+    "coarse": [
+      0.1,
+      0.1
+    ],
+    "intermediate": [
+      0.01,
+      0.01
+    ],
+    "fine": [
+      0.001,
+      0.001
+    ]
+  },
+  "stopping_ruler": "intermediate",
+  "artifacts": {
+    "evaluations": {
+      "file": "evaluations.csv",
+      "committed_bytes": 305297,
+      "sha256": "532d7e63427c74dff24dffa9c67a348176f93a7f3ab52c897ed6157a53fbec1f"
+    },
+    "baselines": {
+      "file": "baselines.csv",
+      "bytes": 2771,
+      "sha256": "19527de9d1e4aca1c1a284c481f52fec8fb6542e19f821a1c13f6723bcf6a72a"
+    },
+    "evaluation_events": {
+      "file": "evaluation_events.csv",
+      "committed_bytes": 11967,
+      "sha256": "d2c6dde0f75f3c3d9c12f5221791e86ea5035d0e11dce69598fc706c7339354f"
+    },
+    "batches": {
+      "file": "batches.csv",
+      "committed_bytes": 670753,
+      "sha256": "698bfe255a3e67bacfe267c4bb3275787c9b830d4672e7d86f36959b2742ad82"
+    }
+  },
+  "checkpoints": [
+    {
+      "id": "update_000000",
+      "update": 0,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_000000/train.csv",
+          "bytes": 408956,
+          "sha256": "bf3a86b22347d9b4d5602cbae5d9401912a0f0170341f298ba305326d8ea136f"
+        },
+        "validation": {
+          "file": "predictions/update_000000/validation.csv",
+          "bytes": 55207,
+          "sha256": "ac48314eb335a4fb64c0a548f5038bf69f24582b95b6c8d10cdc816914c9352b"
+        }
+      },
+      "model_file": "checkpoints/update_000000.pt"
+    },
+    {
+      "id": "update_000010",
+      "update": 10,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_000010/train.csv",
+          "bytes": 416610,
+          "sha256": "199bc896f6ec60c7d882160701d9cc7758b63173d5a619efe0dc58af10713d0d"
+        },
+        "validation": {
+          "file": "predictions/update_000010/validation.csv",
+          "bytes": 56144,
+          "sha256": "ad1ee8382f1f4a6dc7458e516acffd842903707791d58467698762987f75d8df"
+        }
+      },
+      "model_file": "checkpoints/update_000010.pt"
+    },
+    {
+      "id": "update_000020",
+      "update": 20,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_000020/train.csv",
+          "bytes": 414574,
+          "sha256": "1f3bef4aece3c1376907ae7acbb676d85826b5ea0fe2390c45733bc4ca469a0d"
+        },
+        "validation": {
+          "file": "predictions/update_000020/validation.csv",
+          "bytes": 55854,
+          "sha256": "c3bf6c8c569d84543195f3b30abe73ad834588d0102fe2eff8b4572376ba4c51"
+        }
+      },
+      "model_file": "checkpoints/update_000020.pt"
+    },
+    {
+      "id": "update_000050",
+      "update": 50,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_000050/train.csv",
+          "bytes": 402134,
+          "sha256": "f4a70aa31fc78974dcc1ac57b26a13b603c572855dc9530ffa0647ae2dc910de"
+        },
+        "validation": {
+          "file": "predictions/update_000050/validation.csv",
+          "bytes": 54280,
+          "sha256": "874534f09149d61952ba5723e06e38a3f761ec2e8b05a3d2630c50de77257b03"
+        }
+      },
+      "model_file": "checkpoints/update_000050.pt"
+    },
+    {
+      "id": "update_000100",
+      "update": 100,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_000100/train.csv",
+          "bytes": 399428,
+          "sha256": "6d8fdce17870f4d2656876fa041927086a7e23e58a2f2587bd0380026aab18c0"
+        },
+        "validation": {
+          "file": "predictions/update_000100/validation.csv",
+          "bytes": 54000,
+          "sha256": "81a546d9c3292ae2f2f163b3ed10eef0ea1ca5f77be018282998e397ca4c5f5c"
+        }
+      },
+      "model_file": "checkpoints/update_000100.pt"
+    },
+    {
+      "id": "update_000200",
+      "update": 200,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_000200/train.csv",
+          "bytes": 400747,
+          "sha256": "66311cda0faca7164db88f64c772d17febf13275636b6e97040de348c5c3e9a1"
+        },
+        "validation": {
+          "file": "predictions/update_000200/validation.csv",
+          "bytes": 54113,
+          "sha256": "d18f6e1a3df5eca7861ec667dd64216a3d0a0ebb46bfeb230dadee25190f3a11"
+        }
+      },
+      "model_file": "checkpoints/update_000200.pt"
+    },
+    {
+      "id": "update_000300",
+      "update": 300,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_000300/train.csv",
+          "bytes": 402946,
+          "sha256": "3f1b156aa45ab6481c54e8ea49f929929dac367a5c32c8c31d50f00577ac78d2"
+        },
+        "validation": {
+          "file": "predictions/update_000300/validation.csv",
+          "bytes": 54424,
+          "sha256": "b3286c1c780f81ccb534b559dd80f6149aa9c191318802c3cd2836b1f82f2ec3"
+        }
+      },
+      "model_file": "checkpoints/update_000300.pt"
+    },
+    {
+      "id": "update_000400",
+      "update": 400,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_000400/train.csv",
+          "bytes": 403459,
+          "sha256": "7913e915a1a426b4f0f49aadbc6fb7f59a01403f04395caf94324dcaf1b8e570"
+        },
+        "validation": {
+          "file": "predictions/update_000400/validation.csv",
+          "bytes": 54476,
+          "sha256": "9162e0b28c21697a951ceda93c60cb7c1d7036f6231229bca829fe6565aea76c"
+        }
+      },
+      "model_file": "checkpoints/update_000400.pt"
+    },
+    {
+      "id": "update_000500",
+      "update": 500,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_000500/train.csv",
+          "bytes": 404212,
+          "sha256": "d59e239f5414954c827a888e54a5f40c03b696f55e748e06844cee31ae7dd7af"
+        },
+        "validation": {
+          "file": "predictions/update_000500/validation.csv",
+          "bytes": 54599,
+          "sha256": "cf955953090757fb0fd4e44845de0f4386aae8e7eb960587792870aad195ffac"
+        }
+      },
+      "model_file": "checkpoints/update_000500.pt"
+    },
+    {
+      "id": "update_000600",
+      "update": 600,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_000600/train.csv",
+          "bytes": 404057,
+          "sha256": "99ba0a47f49171f316f7e14f4158680c14725f15bda0d9f8267a55f50ae7888d"
+        },
+        "validation": {
+          "file": "predictions/update_000600/validation.csv",
+          "bytes": 54544,
+          "sha256": "e986a3eff9552dea01620e10fcadc031008d76ca2d50da13dc3c2e9fcbd9cf40"
+        }
+      },
+      "model_file": "checkpoints/update_000600.pt"
+    },
+    {
+      "id": "update_000700",
+      "update": 700,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_000700/train.csv",
+          "bytes": 404153,
+          "sha256": "050682e164439f924bb8e1e4eee78fc87d0371ec8d4f1ff80a1d5f27cd3b4c55"
+        },
+        "validation": {
+          "file": "predictions/update_000700/validation.csv",
+          "bytes": 54592,
+          "sha256": "91537ee24123d1aa9ca698148328f2fa3ec24491df5bc0951897fc5f9e7d3e3f"
+        }
+      },
+      "model_file": "checkpoints/update_000700.pt"
+    },
+    {
+      "id": "update_000800",
+      "update": 800,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_000800/train.csv",
+          "bytes": 405155,
+          "sha256": "142ecd330dea17205f2c2c9466fc698f9b84241d2430fc907c3135a73756ca73"
+        },
+        "validation": {
+          "file": "predictions/update_000800/validation.csv",
+          "bytes": 54767,
+          "sha256": "6e9ba51b85b895974cafca4cd56881018292c0a2d1eae7e43afd23cf0e946ffd"
+        }
+      },
+      "model_file": "checkpoints/update_000800.pt"
+    },
+    {
+      "id": "update_000900",
+      "update": 900,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_000900/train.csv",
+          "bytes": 405031,
+          "sha256": "2c8de1846e064f37a6ed32c107e4fcbe0ce4a0053f746e233a0d95c1b455ca08"
+        },
+        "validation": {
+          "file": "predictions/update_000900/validation.csv",
+          "bytes": 54693,
+          "sha256": "ead54a9cd0fa488fe0eb938fc8e3c895278d5f4d033e540b190f66a3015bd9aa"
+        }
+      },
+      "model_file": "checkpoints/update_000900.pt"
+    },
+    {
+      "id": "update_001000",
+      "update": 1000,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_001000/train.csv",
+          "bytes": 405035,
+          "sha256": "6ee5b7e5ed843b28fc551b408778c1fdbe8210512e39d66b878c4c1eaf784542"
+        },
+        "validation": {
+          "file": "predictions/update_001000/validation.csv",
+          "bytes": 54681,
+          "sha256": "b64e05840fada8767e22c150d37c2d96bff486bb799331dad2d711c1ecb43c8a"
+        }
+      },
+      "model_file": "checkpoints/update_001000.pt"
+    },
+    {
+      "id": "update_001100",
+      "update": 1100,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_001100/train.csv",
+          "bytes": 404320,
+          "sha256": "08bc058561d16a142a402ef05f278d36e9a8ee64372b51a7acbcd5ee93b1449a"
+        },
+        "validation": {
+          "file": "predictions/update_001100/validation.csv",
+          "bytes": 54563,
+          "sha256": "7081059fede711f0b03417ceaec1279e20c4a254f1ef6c7f29ed34d37b479715"
+        }
+      },
+      "model_file": "checkpoints/update_001100.pt"
+    },
+    {
+      "id": "update_001200",
+      "update": 1200,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_001200/train.csv",
+          "bytes": 405518,
+          "sha256": "422a506ddf3f2f57863d12c948c5ad5495f03f45f2bb7fa9cfd726a9a96fea02"
+        },
+        "validation": {
+          "file": "predictions/update_001200/validation.csv",
+          "bytes": 54781,
+          "sha256": "6e4949175def5c0e413ca7af10ba5d752c28c1ae3a1503505cee8140f4e9f18e"
+        }
+      },
+      "model_file": "checkpoints/update_001200.pt"
+    },
+    {
+      "id": "update_001300",
+      "update": 1300,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_001300/train.csv",
+          "bytes": 405063,
+          "sha256": "22709356375fb73a52560636e88b691a2c39b9d090d5bcdb36b33c56f2feedbd"
+        },
+        "validation": {
+          "file": "predictions/update_001300/validation.csv",
+          "bytes": 54738,
+          "sha256": "ce2f234ee5f522829ad1a09c01dd262326be4d7ce7efd98551c529b37bf62d64"
+        }
+      },
+      "model_file": "checkpoints/update_001300.pt"
+    },
+    {
+      "id": "update_001400",
+      "update": 1400,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_001400/train.csv",
+          "bytes": 405159,
+          "sha256": "3b79f86f9c9fe9001831218bc3ed2030a9230f7fdc68acdcb4d1181b85b016de"
+        },
+        "validation": {
+          "file": "predictions/update_001400/validation.csv",
+          "bytes": 54747,
+          "sha256": "be0ee1c8c2c6c305f8089062f0b90ba76c914fd0368de32c9ef6d275880cf97e"
+        }
+      },
+      "model_file": "checkpoints/update_001400.pt"
+    },
+    {
+      "id": "update_001500",
+      "update": 1500,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_001500/train.csv",
+          "bytes": 405403,
+          "sha256": "9017ca8cab9acb72024737ec848bb992304005d5ad39b63cc2263b92bbf8a101"
+        },
+        "validation": {
+          "file": "predictions/update_001500/validation.csv",
+          "bytes": 54762,
+          "sha256": "60492ec8d4e4378101e2b3d7312a211e12ba3330147377f9e36456354be48fb5"
+        }
+      },
+      "model_file": "checkpoints/update_001500.pt"
+    },
+    {
+      "id": "update_001600",
+      "update": 1600,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_001600/train.csv",
+          "bytes": 405592,
+          "sha256": "9ff00d226970f4e68bdafc009b48e27aacee39d145c5cefefa101882a8bbc37f"
+        },
+        "validation": {
+          "file": "predictions/update_001600/validation.csv",
+          "bytes": 54763,
+          "sha256": "75845ba134717da182bb72988873ec3050987d1c549eed5b1f3d77a8bbf8919c"
+        }
+      },
+      "model_file": "checkpoints/update_001600.pt"
+    },
+    {
+      "id": "update_001700",
+      "update": 1700,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_001700/train.csv",
+          "bytes": 405829,
+          "sha256": "707ec7ad5e7d513d3557ba98659a22d9ee50b92a30bcab44af7446705b5b4c32"
+        },
+        "validation": {
+          "file": "predictions/update_001700/validation.csv",
+          "bytes": 54820,
+          "sha256": "77b308c12bceb8e116f9ce208cca5a0ef4a7b42ad7f31cee2abfa933984e1103"
+        }
+      },
+      "model_file": "checkpoints/update_001700.pt"
+    },
+    {
+      "id": "update_001800",
+      "update": 1800,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_001800/train.csv",
+          "bytes": 405964,
+          "sha256": "f41eec7eb6fd401a7e750e2d7d003b6db226f5101c568ca158bf3bf930da9722"
+        },
+        "validation": {
+          "file": "predictions/update_001800/validation.csv",
+          "bytes": 54846,
+          "sha256": "991fd886f0d614351808ab8c95293edbb0ad7c6b010562eeaf52d0cfa1a08897"
+        }
+      },
+      "model_file": "checkpoints/update_001800.pt"
+    },
+    {
+      "id": "update_001900",
+      "update": 1900,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_001900/train.csv",
+          "bytes": 405675,
+          "sha256": "dc8c3c2aaecc417eb8c77388010a6b6dd13b126585c03a3f1607fd7dac2b24da"
+        },
+        "validation": {
+          "file": "predictions/update_001900/validation.csv",
+          "bytes": 54806,
+          "sha256": "5b3d1f7abcf0f8ecf22c2db6353e85d9bd8990f69bbcbead0bc4a30f1216f6a1"
+        }
+      },
+      "model_file": "checkpoints/update_001900.pt"
+    },
+    {
+      "id": "update_002000",
+      "update": 2000,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_002000/train.csv",
+          "bytes": 405656,
+          "sha256": "2c748cd63ccf54dbe3341fa8af62ac7f2e70e0d9b31d4d40cb2147b2c9745b84"
+        },
+        "validation": {
+          "file": "predictions/update_002000/validation.csv",
+          "bytes": 54818,
+          "sha256": "d5c829f92fee5ba64a2489b8019860fbe07001d7d49491a05a046369945a4bd5"
+        }
+      },
+      "model_file": "checkpoints/update_002000.pt"
+    },
+    {
+      "id": "update_002100",
+      "update": 2100,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_002100/train.csv",
+          "bytes": 406119,
+          "sha256": "1d88cc53d2d5be4a3aa7ea09a1b3d7f15a473eeed6bf7e6b7e0c4aa373780d71"
+        },
+        "validation": {
+          "file": "predictions/update_002100/validation.csv",
+          "bytes": 54838,
+          "sha256": "dd86ea2c025e69778a26bb1d8ce24cfa52019eff978875d288ef9315eacc55d8"
+        }
+      },
+      "model_file": "checkpoints/update_002100.pt"
+    },
+    {
+      "id": "update_002200",
+      "update": 2200,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_002200/train.csv",
+          "bytes": 405899,
+          "sha256": "842d8d209a15b7c481553cb4ecb372d222c5c027c8993effecae2ba53a9368b6"
+        },
+        "validation": {
+          "file": "predictions/update_002200/validation.csv",
+          "bytes": 54868,
+          "sha256": "e26d7bcb7aae7957db9e7a5bb31a269a0eb9586bbd17b8e675e6ece571f41379"
+        }
+      },
+      "model_file": "checkpoints/update_002200.pt"
+    },
+    {
+      "id": "update_002300",
+      "update": 2300,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_002300/train.csv",
+          "bytes": 406036,
+          "sha256": "517a5d3ee129de63333e4ca56a2c39f9a8da3220a278bbfeafa6429a1ca85871"
+        },
+        "validation": {
+          "file": "predictions/update_002300/validation.csv",
+          "bytes": 54862,
+          "sha256": "61053df352f0bd3aab73e8c95f83acf838016824e7cde9beea39996cc10074f9"
+        }
+      },
+      "model_file": "checkpoints/update_002300.pt"
+    },
+    {
+      "id": "update_002400",
+      "update": 2400,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_002400/train.csv",
+          "bytes": 405720,
+          "sha256": "71fa1e83afe3fa23dc85dff07ee660eadbc1dd68b7a24713d13440ffef373b9b"
+        },
+        "validation": {
+          "file": "predictions/update_002400/validation.csv",
+          "bytes": 54793,
+          "sha256": "19f783ec3481a22a1600584cf7ea6d9f41a8d20b7628bacfbd32874bfe79bd5d"
+        }
+      },
+      "model_file": "checkpoints/update_002400.pt"
+    },
+    {
+      "id": "update_002500",
+      "update": 2500,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_002500/train.csv",
+          "bytes": 405628,
+          "sha256": "e8ee54caf02fa9c3475cd51c5d3211659054a0bab20a875c2b5aaeaea54c2c86"
+        },
+        "validation": {
+          "file": "predictions/update_002500/validation.csv",
+          "bytes": 54817,
+          "sha256": "e1d6e1844069e163757550067263fd2960dfd65c7a8243394b310ff1ea59e3a6"
+        }
+      },
+      "model_file": "checkpoints/update_002500.pt"
+    },
+    {
+      "id": "update_002600",
+      "update": 2600,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_002600/train.csv",
+          "bytes": 405818,
+          "sha256": "832ae03136c78c0cbd6f1ad2175a42d65fc2799cf944057c898d997c2110ec87"
+        },
+        "validation": {
+          "file": "predictions/update_002600/validation.csv",
+          "bytes": 54828,
+          "sha256": "bd0e4539078eecd294773ec08430bc6afb2122388a4d720385ba2d050bebdcc7"
+        }
+      },
+      "model_file": "checkpoints/update_002600.pt"
+    },
+    {
+      "id": "update_002700",
+      "update": 2700,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_002700/train.csv",
+          "bytes": 405718,
+          "sha256": "e44b07dd4d29bf4adf4a4471841a1298f68064431b84dbaf8c60a16fb76f0349"
+        },
+        "validation": {
+          "file": "predictions/update_002700/validation.csv",
+          "bytes": 54814,
+          "sha256": "5e376d2ddddbe62c71f3464a42bef7ddee7b389ed2b36e0dec251f534d2ff4db"
+        }
+      },
+      "model_file": "checkpoints/update_002700.pt"
+    },
+    {
+      "id": "update_002800",
+      "update": 2800,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_002800/train.csv",
+          "bytes": 406322,
+          "sha256": "2c3ccd9af67a52c464ccd43e27febc4ac09e7823b6c983c718baa91cad39ae40"
+        },
+        "validation": {
+          "file": "predictions/update_002800/validation.csv",
+          "bytes": 54906,
+          "sha256": "21b6e78b3db103da3baa42ee9bd82c2df79ae0c8e53c5cad2e56a9fb908e56a0"
+        }
+      },
+      "model_file": "checkpoints/update_002800.pt"
+    },
+    {
+      "id": "update_002900",
+      "update": 2900,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_002900/train.csv",
+          "bytes": 406101,
+          "sha256": "87cf94a263251cd5455fcb193dcbd8212e9a419892ab7979014c813d7e032066"
+        },
+        "validation": {
+          "file": "predictions/update_002900/validation.csv",
+          "bytes": 54861,
+          "sha256": "d5bbc22af9ac0894c1c7f06ca83caae0478e4eae8194758081ad26d6090e103a"
+        }
+      },
+      "model_file": "checkpoints/update_002900.pt"
+    },
+    {
+      "id": "update_003000",
+      "update": 3000,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_003000/train.csv",
+          "bytes": 406117,
+          "sha256": "dd3ffa09c98babea631e5fddae75b73f4f29586086c6dab3b545d856313a80ff"
+        },
+        "validation": {
+          "file": "predictions/update_003000/validation.csv",
+          "bytes": 54867,
+          "sha256": "2f69d36405a8daa6ef99d72ab7e3f75c208f92ce0c0d675d908759dd45d22d93"
+        }
+      },
+      "model_file": "checkpoints/update_003000.pt"
+    },
+    {
+      "id": "update_003100",
+      "update": 3100,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_003100/train.csv",
+          "bytes": 406196,
+          "sha256": "b1dd7dea2b4ceea08886aa28fb668cbf79810792b477d32e8bdcd3e2425e64e1"
+        },
+        "validation": {
+          "file": "predictions/update_003100/validation.csv",
+          "bytes": 54883,
+          "sha256": "d14c6bc3e15d2cccd47b8ef397a7296e13314c21ab29142475e0e1715cb42e0a"
+        }
+      },
+      "model_file": "checkpoints/update_003100.pt"
+    },
+    {
+      "id": "update_003200",
+      "update": 3200,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_003200/train.csv",
+          "bytes": 405869,
+          "sha256": "f2fc3964fd378aa8b4191bfb2c40a36b804cd877a1790465e1eb91b260de04d1"
+        },
+        "validation": {
+          "file": "predictions/update_003200/validation.csv",
+          "bytes": 54880,
+          "sha256": "8710d2715b0b1c3f0123dfd976322c56bd317ba145e9dcc728c955ba705361df"
+        }
+      },
+      "model_file": "checkpoints/update_003200.pt"
+    },
+    {
+      "id": "update_003300",
+      "update": 3300,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_003300/train.csv",
+          "bytes": 405902,
+          "sha256": "a5a5309c1d1ffc52cb901135b40f2f3195edc39bd1463f4249eecc27f25306fd"
+        },
+        "validation": {
+          "file": "predictions/update_003300/validation.csv",
+          "bytes": 54859,
+          "sha256": "ef5f7f52271c50ee2ed96f5b65440247cfe07d296a4a526749bd490803eee774"
+        }
+      },
+      "model_file": "checkpoints/update_003300.pt"
+    },
+    {
+      "id": "update_003400",
+      "update": 3400,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_003400/train.csv",
+          "bytes": 406138,
+          "sha256": "96f45abcb1d9f15ad397bd3e4ff5fe2b4f7342b17f4baccd294cd91fbf6817ff"
+        },
+        "validation": {
+          "file": "predictions/update_003400/validation.csv",
+          "bytes": 54842,
+          "sha256": "b9db27142f9d45c0a9d497e1cb3c89a87df0179c430272d935d951be80287e34"
+        }
+      },
+      "model_file": "checkpoints/update_003400.pt"
+    },
+    {
+      "id": "update_003500",
+      "update": 3500,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_003500/train.csv",
+          "bytes": 406451,
+          "sha256": "20ece4fcf59e2bb3953cdbb8ada64df9959fbcc6c5611ee48450fa7b5b77c766"
+        },
+        "validation": {
+          "file": "predictions/update_003500/validation.csv",
+          "bytes": 54880,
+          "sha256": "01fec45e3901a2fcc0c81bfebaf4b25da7536e713c83f5c2982b055583e92d07"
+        }
+      },
+      "model_file": "checkpoints/update_003500.pt"
+    },
+    {
+      "id": "update_003600",
+      "update": 3600,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_003600/train.csv",
+          "bytes": 406166,
+          "sha256": "cebe7e1ac7895d0fb5796122cc0c58a79625b33294ec05ae6595afaea062d35a"
+        },
+        "validation": {
+          "file": "predictions/update_003600/validation.csv",
+          "bytes": 54866,
+          "sha256": "58e543e42ce23902525ef320283d93541d5329970aacacd73786a02a6dbfc3ac"
+        }
+      },
+      "model_file": "checkpoints/update_003600.pt"
+    },
+    {
+      "id": "update_003700",
+      "update": 3700,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_003700/train.csv",
+          "bytes": 406479,
+          "sha256": "07863d281fa5c31c62fbaa418fa19414f7ddc829e2f21210b2d9d72b29de3ad8"
+        },
+        "validation": {
+          "file": "predictions/update_003700/validation.csv",
+          "bytes": 54949,
+          "sha256": "5f4bb6543f75f6f5c7e3a2f73aa37057efa8a223a04bb538b0b8447515e7c725"
+        }
+      },
+      "model_file": "checkpoints/update_003700.pt"
+    },
+    {
+      "id": "update_003800",
+      "update": 3800,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_003800/train.csv",
+          "bytes": 406791,
+          "sha256": "b8f95a754dba4dfd85e82d09f965610d713a675b08fa09655b104af00ada35c1"
+        },
+        "validation": {
+          "file": "predictions/update_003800/validation.csv",
+          "bytes": 54929,
+          "sha256": "a4ef7813bf3e4a13897bb350836f070afeadfb273c3aa90a82e82d5e13eebf2c"
+        }
+      },
+      "model_file": "checkpoints/update_003800.pt"
+    },
+    {
+      "id": "update_003900",
+      "update": 3900,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_003900/train.csv",
+          "bytes": 406527,
+          "sha256": "d03b3912639d64634ab9a0d3c6463d02d9360b9ef279eb8c63ab718be1d9ff34"
+        },
+        "validation": {
+          "file": "predictions/update_003900/validation.csv",
+          "bytes": 54949,
+          "sha256": "52ab8af609f6c5285b045773dc382836ec6df366b9529f507d9e17471a341ef8"
+        }
+      },
+      "model_file": "checkpoints/update_003900.pt"
+    },
+    {
+      "id": "update_004000",
+      "update": 4000,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_004000/train.csv",
+          "bytes": 406027,
+          "sha256": "0b80d41bafcc4ef6098dd1a99e5c1184089d6d7d98a2e72886bd8024209d127c"
+        },
+        "validation": {
+          "file": "predictions/update_004000/validation.csv",
+          "bytes": 54911,
+          "sha256": "b5b9002343c96fb69ef52c8fd364c0bf615e4cc200feb23fe922b6f11190ad48"
+        }
+      },
+      "model_file": "checkpoints/update_004000.pt"
+    },
+    {
+      "id": "update_004100",
+      "update": 4100,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_004100/train.csv",
+          "bytes": 406043,
+          "sha256": "b56a9811b4a29279bfc669838d1656f2ec27bafcf085363547243642a5f64482"
+        },
+        "validation": {
+          "file": "predictions/update_004100/validation.csv",
+          "bytes": 54825,
+          "sha256": "f9d994240c92a068d53a242e51ba0491a6bd3af07d90ed54945047a75ca26258"
+        }
+      },
+      "model_file": "checkpoints/update_004100.pt"
+    },
+    {
+      "id": "update_004200",
+      "update": 4200,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_004200/train.csv",
+          "bytes": 406405,
+          "sha256": "f46e438ad0b4ce00eb1fc4a880d255a72f9fd3369e0522e198e9c69d4c0f1987"
+        },
+        "validation": {
+          "file": "predictions/update_004200/validation.csv",
+          "bytes": 54861,
+          "sha256": "9d3da1cabc62360c60b1156e5548365f514d9f522d190c3b2f0e311088de695b"
+        }
+      },
+      "model_file": "checkpoints/update_004200.pt"
+    },
+    {
+      "id": "update_004300",
+      "update": 4300,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_004300/train.csv",
+          "bytes": 406256,
+          "sha256": "9768ba76f901a2a1313fc9eacf20e3cacca1614e4d696547dd98a7bfc36d20fd"
+        },
+        "validation": {
+          "file": "predictions/update_004300/validation.csv",
+          "bytes": 54866,
+          "sha256": "79a39b3c69a2e42b1b2322accc51b206f1efa828730538f7e32ecf831f3ab4f5"
+        }
+      },
+      "model_file": "checkpoints/update_004300.pt"
+    },
+    {
+      "id": "update_004400",
+      "update": 4400,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_004400/train.csv",
+          "bytes": 406467,
+          "sha256": "cdd61607fb01bc27eba1ab6ceafd32027f62d02f7d38e1f6d0a18ac26f7a411e"
+        },
+        "validation": {
+          "file": "predictions/update_004400/validation.csv",
+          "bytes": 54899,
+          "sha256": "03350b47e7f775d220e7732b46f30f6b253389a7db9642eb80cc65be29c224e0"
+        }
+      },
+      "model_file": "checkpoints/update_004400.pt"
+    },
+    {
+      "id": "update_004500",
+      "update": 4500,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_004500/train.csv",
+          "bytes": 406350,
+          "sha256": "954706ec3a829e5d1bfa8f0e283da76ea44188eff8aba7bfdbec1b59ef65fefc"
+        },
+        "validation": {
+          "file": "predictions/update_004500/validation.csv",
+          "bytes": 54869,
+          "sha256": "1e541b1751825cf7e28752990e75bf5d5c40e76becfe0c62cc85b6824309eb74"
+        }
+      },
+      "model_file": "checkpoints/update_004500.pt"
+    },
+    {
+      "id": "update_004600",
+      "update": 4600,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_004600/train.csv",
+          "bytes": 406392,
+          "sha256": "c509ff38df8f5f599ca5ce9e8b338896b0612bb781f0162055f4b3a2b517c771"
+        },
+        "validation": {
+          "file": "predictions/update_004600/validation.csv",
+          "bytes": 54880,
+          "sha256": "e40523c1cb37e171e8f02804fca65172e6cf364fd43a01cf382208aba164ba07"
+        }
+      },
+      "model_file": "checkpoints/update_004600.pt"
+    },
+    {
+      "id": "update_004700",
+      "update": 4700,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_004700/train.csv",
+          "bytes": 406526,
+          "sha256": "1e95c900106cedbb3389a799059a10f548f27242c30196a72734a0508f871db0"
+        },
+        "validation": {
+          "file": "predictions/update_004700/validation.csv",
+          "bytes": 54903,
+          "sha256": "4fadd7f143e09c6b1537beb8a44f629dfc49b27537345af94452c63dee1f6e9a"
+        }
+      },
+      "model_file": "checkpoints/update_004700.pt"
+    },
+    {
+      "id": "update_004800",
+      "update": 4800,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_004800/train.csv",
+          "bytes": 406353,
+          "sha256": "4fbb6398efe51fd73b6956a15810dcfe825e5831fa608c06445286b59904b2e8"
+        },
+        "validation": {
+          "file": "predictions/update_004800/validation.csv",
+          "bytes": 54852,
+          "sha256": "641b48cdcec96ac4cbbb13802e880c85f0169ca9a8aa5ad2440768ee47a7153d"
+        }
+      },
+      "model_file": "checkpoints/update_004800.pt"
+    },
+    {
+      "id": "update_004900",
+      "update": 4900,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_004900/train.csv",
+          "bytes": 406405,
+          "sha256": "b3df6f3a5f6dce1288163e627375cc2daee9cb6024ebe77ae36c982d07db9816"
+        },
+        "validation": {
+          "file": "predictions/update_004900/validation.csv",
+          "bytes": 54865,
+          "sha256": "f7bd274abf15485936db1ff67636656e56bfd15e73971e691a63feeeb481a1c8"
+        }
+      },
+      "model_file": "checkpoints/update_004900.pt"
+    },
+    {
+      "id": "update_005000",
+      "update": 5000,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_005000/train.csv",
+          "bytes": 406119,
+          "sha256": "3f2dca0aabf684bb6d4da048b2eb3065becc712ac1777532092f70fd2ec81889"
+        },
+        "validation": {
+          "file": "predictions/update_005000/validation.csv",
+          "bytes": 54837,
+          "sha256": "f13300d7064e6e3fa1be18e14b2eb3cd540785acacbbfb5dc57a4179bda10dc2"
+        }
+      },
+      "model_file": "checkpoints/update_005000.pt"
+    },
+    {
+      "id": "update_005100",
+      "update": 5100,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_005100/train.csv",
+          "bytes": 406348,
+          "sha256": "5889b897bac06472e3f72131c4cb45ea4fa2a8dd43a991d9f2fc96d85bc39be3"
+        },
+        "validation": {
+          "file": "predictions/update_005100/validation.csv",
+          "bytes": 54883,
+          "sha256": "d44d60620dfcdf5a5e518ce06fc2a841c2a248263c898dbf5de7d3af8a4e2c13"
+        }
+      },
+      "model_file": "checkpoints/update_005100.pt"
+    },
+    {
+      "id": "update_005200",
+      "update": 5200,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_005200/train.csv",
+          "bytes": 406428,
+          "sha256": "32bff0b5da7ac7376736536cbdeac25e2670321a8f54e859696dbda9a62188d0"
+        },
+        "validation": {
+          "file": "predictions/update_005200/validation.csv",
+          "bytes": 54904,
+          "sha256": "086391d6bfc1cd301c6d886199fa7ba4059565c7cbcaadf5e7c68cc628e07db5"
+        }
+      },
+      "model_file": "checkpoints/update_005200.pt"
+    },
+    {
+      "id": "update_005300",
+      "update": 5300,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_005300/train.csv",
+          "bytes": 406660,
+          "sha256": "4bf2e1c6b7c6394101603004406ed2437d8a49dd08da140e6589a3850835475b"
+        },
+        "validation": {
+          "file": "predictions/update_005300/validation.csv",
+          "bytes": 54934,
+          "sha256": "4282453adb433bb13831060be23d68948c0e13cfa0ad543c5d46b0282e84e2ac"
+        }
+      },
+      "model_file": "checkpoints/update_005300.pt"
+    },
+    {
+      "id": "update_005400",
+      "update": 5400,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_005400/train.csv",
+          "bytes": 406558,
+          "sha256": "9366e465f4636894064681e4210f737339d6084970bf4fd797ad7943d068202e"
+        },
+        "validation": {
+          "file": "predictions/update_005400/validation.csv",
+          "bytes": 54936,
+          "sha256": "3b813b67b33a073c43891c69321bd1551c30435a4014bb6e19aa97b49019882f"
+        }
+      },
+      "model_file": "checkpoints/update_005400.pt"
+    },
+    {
+      "id": "update_005500",
+      "update": 5500,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_005500/train.csv",
+          "bytes": 406617,
+          "sha256": "f88b6df3308938d35bca2377abba0c5bdca000db129aae91f61c859918b95722"
+        },
+        "validation": {
+          "file": "predictions/update_005500/validation.csv",
+          "bytes": 54871,
+          "sha256": "aa1abd8729daf6e2724b6c91b436edd0987cdf8c8fb2442ae46d55ae6b5ac5b4"
+        }
+      },
+      "model_file": "checkpoints/update_005500.pt"
+    },
+    {
+      "id": "update_005600",
+      "update": 5600,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_005600/train.csv",
+          "bytes": 406423,
+          "sha256": "a201b3e2393beb527bb7b2135d975b33a530c12e7db99f84924ee87fa2ce7b9d"
+        },
+        "validation": {
+          "file": "predictions/update_005600/validation.csv",
+          "bytes": 54910,
+          "sha256": "c669d4d029369781dbd29c0b3fc013116ea054eaad4d68715473d05ed672368a"
+        }
+      },
+      "model_file": "checkpoints/update_005600.pt"
+    },
+    {
+      "id": "update_005700",
+      "update": 5700,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_005700/train.csv",
+          "bytes": 406288,
+          "sha256": "83de62b2a9ee92dc888265f0d5c8aa4fea80f2dd41dcba523ce2f7ed59180770"
+        },
+        "validation": {
+          "file": "predictions/update_005700/validation.csv",
+          "bytes": 54855,
+          "sha256": "5a33f8d7dd65ccbb20e0459eb17a32f9cac937500e23a1900e2ceb7c74f2ae39"
+        }
+      },
+      "model_file": "checkpoints/update_005700.pt"
+    },
+    {
+      "id": "update_005800",
+      "update": 5800,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_005800/train.csv",
+          "bytes": 406489,
+          "sha256": "af61ea7f1c167f9f5ee60a3e02e5ea5566ae2e319f9e40e6710715fdc5771a38"
+        },
+        "validation": {
+          "file": "predictions/update_005800/validation.csv",
+          "bytes": 54924,
+          "sha256": "c2b226cf01e4c9806d2a47e52dc1d889953fddfe61fe23fe31be91475f9d5367"
+        }
+      },
+      "model_file": "checkpoints/update_005800.pt"
+    },
+    {
+      "id": "update_005900",
+      "update": 5900,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_005900/train.csv",
+          "bytes": 406450,
+          "sha256": "04dce4ff4df36c9dbd25de768e468f35c5b8f26385a78494cdac2293702cf613"
+        },
+        "validation": {
+          "file": "predictions/update_005900/validation.csv",
+          "bytes": 54881,
+          "sha256": "1afb4e8fcc0c84812dd5db7b55865345940c8ab9341629a4efb0b9835a87fd7c"
+        }
+      },
+      "model_file": "checkpoints/update_005900.pt"
+    },
+    {
+      "id": "update_006000",
+      "update": 6000,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_006000/train.csv",
+          "bytes": 406581,
+          "sha256": "4224f2c56ec2a2d7b0473b2835f12bf2c48f7ce234aa35d98fbc1ab5d5dab5cb"
+        },
+        "validation": {
+          "file": "predictions/update_006000/validation.csv",
+          "bytes": 54907,
+          "sha256": "7ebea953ebe1fef99aa0d74ca9ddebce5c584c542f03df306423a1c4820febb5"
+        }
+      },
+      "model_file": "checkpoints/update_006000.pt"
+    },
+    {
+      "id": "update_006100",
+      "update": 6100,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_006100/train.csv",
+          "bytes": 406528,
+          "sha256": "b919b24ad93a7dd68871a2a47afe72a1d8dd09f3fbb23e01b3c7f579db696101"
+        },
+        "validation": {
+          "file": "predictions/update_006100/validation.csv",
+          "bytes": 54909,
+          "sha256": "dba10b993ccf579e24474867d86060e22ca555245fe06b1319f88475902ba45b"
+        }
+      },
+      "model_file": "checkpoints/update_006100.pt"
+    },
+    {
+      "id": "update_006200",
+      "update": 6200,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_006200/train.csv",
+          "bytes": 406391,
+          "sha256": "a058b7e08c08bece33b300e90509c09604220cf1a4849f54a0737f36befeb99f"
+        },
+        "validation": {
+          "file": "predictions/update_006200/validation.csv",
+          "bytes": 54931,
+          "sha256": "f0718912bf09df371b12a5a4e721f49048c4eb956eabb01e9bcfecc199d49b58"
+        }
+      },
+      "model_file": "checkpoints/update_006200.pt"
+    },
+    {
+      "id": "update_006300",
+      "update": 6300,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_006300/train.csv",
+          "bytes": 406585,
+          "sha256": "8841ba6ac08fc90b26928a7c10730b2186e9b1be901dcb7dda99ace5cb2879b3"
+        },
+        "validation": {
+          "file": "predictions/update_006300/validation.csv",
+          "bytes": 54903,
+          "sha256": "37a5038bc13353fc6a2783bb9421a31f48a44910e1dd99352a374b1a36722402"
+        }
+      },
+      "model_file": "checkpoints/update_006300.pt"
+    },
+    {
+      "id": "update_006400",
+      "update": 6400,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_006400/train.csv",
+          "bytes": 406569,
+          "sha256": "3a7b81f2aa8def3f26ddfa55f99454e4e5a45dde852b1ea3450de00da92bd471"
+        },
+        "validation": {
+          "file": "predictions/update_006400/validation.csv",
+          "bytes": 54889,
+          "sha256": "6b795d3377e6083032c00e049a93fe1277fc5176ebde57eb2d522877822e48f5"
+        }
+      },
+      "model_file": "checkpoints/update_006400.pt"
+    },
+    {
+      "id": "update_006500",
+      "update": 6500,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_006500/train.csv",
+          "bytes": 406442,
+          "sha256": "f2542504c4a42a7d19fc7fb240efda478a3c745313e35899c2e1467df14eea29"
+        },
+        "validation": {
+          "file": "predictions/update_006500/validation.csv",
+          "bytes": 54882,
+          "sha256": "6bb7d388c4d4d16a9a0df5befdaa40f85d5192fa099c4efdbbee3f827f923844"
+        }
+      },
+      "model_file": "checkpoints/update_006500.pt"
+    },
+    {
+      "id": "update_006600",
+      "update": 6600,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_006600/train.csv",
+          "bytes": 406448,
+          "sha256": "6c72192798f6f183f217d936460685ffcf4ca7850aef03e020312901cac21928"
+        },
+        "validation": {
+          "file": "predictions/update_006600/validation.csv",
+          "bytes": 54880,
+          "sha256": "06cd8c1f8431984fd6c08b74cf0c07d3d966cfb6ae286d5011e51ac764224d39"
+        }
+      },
+      "model_file": "checkpoints/update_006600.pt"
+    },
+    {
+      "id": "update_006700",
+      "update": 6700,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_006700/train.csv",
+          "bytes": 406512,
+          "sha256": "52c432f67a41a19998fd07173a367b3eacdaf3362e12c909c1fb347740d85f0b"
+        },
+        "validation": {
+          "file": "predictions/update_006700/validation.csv",
+          "bytes": 54937,
+          "sha256": "7675ab0566d923bee72a9219604551a219441a16ce04c2d91861a510d06766fa"
+        }
+      },
+      "model_file": "checkpoints/update_006700.pt"
+    },
+    {
+      "id": "update_006800",
+      "update": 6800,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_006800/train.csv",
+          "bytes": 406461,
+          "sha256": "ddfdffd13bc0d582cae285ce207120d0196c40044bbf7f6d3196fe2aa422106d"
+        },
+        "validation": {
+          "file": "predictions/update_006800/validation.csv",
+          "bytes": 54879,
+          "sha256": "c789ef46dc90e99918366db49d96047a253a4dc4e562c43a456407494f1aafff"
+        }
+      },
+      "model_file": "checkpoints/update_006800.pt"
+    },
+    {
+      "id": "update_006900",
+      "update": 6900,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_006900/train.csv",
+          "bytes": 406394,
+          "sha256": "1964b66cb9a59a045ce90366de6e66a5e8e28d4b13bb61943e2014ce633a2292"
+        },
+        "validation": {
+          "file": "predictions/update_006900/validation.csv",
+          "bytes": 54915,
+          "sha256": "6d403ea1e075637a50a8b2fe81abf40e3f171a79cad56a27a6479eb1bc1b8812"
+        }
+      },
+      "model_file": "checkpoints/update_006900.pt"
+    },
+    {
+      "id": "update_007000",
+      "update": 7000,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_007000/train.csv",
+          "bytes": 406488,
+          "sha256": "ac379a1bb0ce81bf099495e08aa864565860f9606ad1d524c522051068d07bcf"
+        },
+        "validation": {
+          "file": "predictions/update_007000/validation.csv",
+          "bytes": 54868,
+          "sha256": "3553f5f8488a6e452bd6aa2d8b93109f8f12d310aef4bbf91e61cf29960080a2"
+        }
+      },
+      "model_file": "checkpoints/update_007000.pt"
+    },
+    {
+      "id": "update_007100",
+      "update": 7100,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_007100/train.csv",
+          "bytes": 406391,
+          "sha256": "5db036d51db997430f8224c5b1697ea54f49050eb1ffc9bfa5ec51328f743bf3"
+        },
+        "validation": {
+          "file": "predictions/update_007100/validation.csv",
+          "bytes": 54876,
+          "sha256": "7613f99fa12629f078fc00dd63a0931bcb3bf5dedb37afcf26ec2c807b44c07e"
+        }
+      },
+      "model_file": "checkpoints/update_007100.pt"
+    },
+    {
+      "id": "update_007200",
+      "update": 7200,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_007200/train.csv",
+          "bytes": 406476,
+          "sha256": "51e1d38f1b61a4a51758388918074f3ab6aa36205c322d5a2263f55d40885d14"
+        },
+        "validation": {
+          "file": "predictions/update_007200/validation.csv",
+          "bytes": 54906,
+          "sha256": "1d61d6e6337fb532e50cb4e1a6495441edf53c75a0cee4b0d7e8b85231416176"
+        }
+      },
+      "model_file": "checkpoints/update_007200.pt"
+    },
+    {
+      "id": "update_007300",
+      "update": 7300,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_007300/train.csv",
+          "bytes": 406424,
+          "sha256": "d4c6f336529362e4472e937c194afe6219fb34600b809044e3153ff332197d9b"
+        },
+        "validation": {
+          "file": "predictions/update_007300/validation.csv",
+          "bytes": 54920,
+          "sha256": "73121de68cabdb51d1879bfc3c29e4318d64a9dc6c84774f463c0c1e3b8afbe8"
+        }
+      },
+      "model_file": "checkpoints/update_007300.pt"
+    },
+    {
+      "id": "update_007400",
+      "update": 7400,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_007400/train.csv",
+          "bytes": 406495,
+          "sha256": "2b51971233e69826bd102ad61a47a677444ae3df67284e8877731580065d6168"
+        },
+        "validation": {
+          "file": "predictions/update_007400/validation.csv",
+          "bytes": 54891,
+          "sha256": "b0accb35a5cc58e5b0fa9b77da7b9efeac7335375b9674e400f8493aa3364ea7"
+        }
+      },
+      "model_file": "checkpoints/update_007400.pt"
+    },
+    {
+      "id": "update_007500",
+      "update": 7500,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_007500/train.csv",
+          "bytes": 406597,
+          "sha256": "11415db8d33ef523c4aa09cc8e46e804484b5d8450d03d8e2a202750ae718c3a"
+        },
+        "validation": {
+          "file": "predictions/update_007500/validation.csv",
+          "bytes": 54892,
+          "sha256": "4734d790e37dadc480fe96258945a7bc9ac57967724552e53b17c7a4e21f87e9"
+        }
+      },
+      "model_file": "checkpoints/update_007500.pt"
+    },
+    {
+      "id": "update_007600",
+      "update": 7600,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_007600/train.csv",
+          "bytes": 406436,
+          "sha256": "7fa8544294e95e80f4651f23f4df0cdb08ef94017d040d11587ace27aac4cfd7"
+        },
+        "validation": {
+          "file": "predictions/update_007600/validation.csv",
+          "bytes": 54893,
+          "sha256": "3a3af3b8925300f1f15198ed32fd14f7bbe5bb5b369407045483b0f42554c3aa"
+        }
+      },
+      "model_file": "checkpoints/update_007600.pt"
+    },
+    {
+      "id": "update_007700",
+      "update": 7700,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_007700/train.csv",
+          "bytes": 406418,
+          "sha256": "b05450ef9414b8f82741d80515a89a6bed82a873c28a4fdc01f79bad61bb5207"
+        },
+        "validation": {
+          "file": "predictions/update_007700/validation.csv",
+          "bytes": 54880,
+          "sha256": "90d8bd52bca653cc6a950342be78d492fca9ac01c2ee89e21d3a6bfa9b2bc28f"
+        }
+      },
+      "model_file": "checkpoints/update_007700.pt"
+    },
+    {
+      "id": "update_007800",
+      "update": 7800,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_007800/train.csv",
+          "bytes": 406580,
+          "sha256": "c2d356b800fec95fb64a84711d8b0f8506d206d3653c36f780db0af71ee1ff15"
+        },
+        "validation": {
+          "file": "predictions/update_007800/validation.csv",
+          "bytes": 54914,
+          "sha256": "7d5cda2d4506f779cca07ec46c9f677f73c0c9afad1f9afb5c8c8e1cad3a078b"
+        }
+      },
+      "model_file": "checkpoints/update_007800.pt"
+    },
+    {
+      "id": "update_007900",
+      "update": 7900,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_007900/train.csv",
+          "bytes": 406491,
+          "sha256": "659a51d3210a24a317ebe7986f222475ceff96984fadade3460cfd388ae37080"
+        },
+        "validation": {
+          "file": "predictions/update_007900/validation.csv",
+          "bytes": 54903,
+          "sha256": "da395cc069abd079222de0455fde411a9ccd083ff569caf92abcd9be0f7bed3a"
+        }
+      },
+      "model_file": "checkpoints/update_007900.pt"
+    },
+    {
+      "id": "update_008000",
+      "update": 8000,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_008000/train.csv",
+          "bytes": 406472,
+          "sha256": "e0f212f51e228195a8056ee51845888f049bf7b3fc93b0956e8b24ac97bf785d"
+        },
+        "validation": {
+          "file": "predictions/update_008000/validation.csv",
+          "bytes": 54903,
+          "sha256": "ccae6ab84b002b1ee7d945498ff376b0d98b1a7165d594b0b7f2c2d396e1c407"
+        }
+      },
+      "model_file": "checkpoints/update_008000.pt"
+    },
+    {
+      "id": "update_008100",
+      "update": 8100,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_008100/train.csv",
+          "bytes": 406462,
+          "sha256": "855decb089863cce3facba8dc854c9e1c166bc5038a378053b2897c5c1aa412d"
+        },
+        "validation": {
+          "file": "predictions/update_008100/validation.csv",
+          "bytes": 54904,
+          "sha256": "ab7de6343289dc676bb5933df490da58d5fa2de4e1394733e7cbe18ee45cd060"
+        }
+      },
+      "model_file": "checkpoints/update_008100.pt"
+    },
+    {
+      "id": "update_008200",
+      "update": 8200,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_008200/train.csv",
+          "bytes": 406429,
+          "sha256": "8952e7c206da1ac4cdf92dcfb0ccdd3649be5a9be99c7b938bb52c120a883025"
+        },
+        "validation": {
+          "file": "predictions/update_008200/validation.csv",
+          "bytes": 54901,
+          "sha256": "7fe12287194aa4e49715efbd8b25a9cad51b72decbfd5a18b56a3999851074b0"
+        }
+      },
+      "model_file": "checkpoints/update_008200.pt"
+    },
+    {
+      "id": "update_008300",
+      "update": 8300,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_008300/train.csv",
+          "bytes": 406545,
+          "sha256": "f7d25d1522194ebfef94ada3ea0251e675c68e0c8abbe607b43dedb95b5933cb"
+        },
+        "validation": {
+          "file": "predictions/update_008300/validation.csv",
+          "bytes": 54896,
+          "sha256": "92920d359107ce6e9fb95919356b5ee91df78e9ba3161dd36a5528d4947dfa39"
+        }
+      },
+      "model_file": "checkpoints/update_008300.pt"
+    },
+    {
+      "id": "update_008400",
+      "update": 8400,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_008400/train.csv",
+          "bytes": 406485,
+          "sha256": "9f4a31d9175e8fcbbf339033733cc95c1fa84f95040a05d9ce338cf55ab7574d"
+        },
+        "validation": {
+          "file": "predictions/update_008400/validation.csv",
+          "bytes": 54899,
+          "sha256": "192ae0db7a72f464d90ed1f303bd5e91c8370b9a20ae730369d2acb1fecabd7f"
+        }
+      },
+      "model_file": "checkpoints/update_008400.pt"
+    },
+    {
+      "id": "update_008500",
+      "update": 8500,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_008500/train.csv",
+          "bytes": 406337,
+          "sha256": "6dc5037729035a79fafcd849e34ff94f70be4ef5296c70e14b61c4019742f8aa"
+        },
+        "validation": {
+          "file": "predictions/update_008500/validation.csv",
+          "bytes": 54898,
+          "sha256": "dd41d3aa7cd546e8a8637a188a338c737764896c6d06382eac97797b6b534580"
+        }
+      },
+      "model_file": "checkpoints/update_008500.pt"
+    },
+    {
+      "id": "update_008600",
+      "update": 8600,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_008600/train.csv",
+          "bytes": 406521,
+          "sha256": "4e63e82aeb0f0265092de1a819d192b16aeba427ab513b148183bcab7cb6a2c7"
+        },
+        "validation": {
+          "file": "predictions/update_008600/validation.csv",
+          "bytes": 54893,
+          "sha256": "8abd19d4dc1341762b434992b1e4dac476f983e501b460b3d83d707780790be7"
+        }
+      },
+      "model_file": "checkpoints/update_008600.pt"
+    },
+    {
+      "id": "update_008700",
+      "update": 8700,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_008700/train.csv",
+          "bytes": 406505,
+          "sha256": "16bc60312b51f8bb3bd6999789d930249ca9e7a5ac06db4b1f17f77798ddfdb3"
+        },
+        "validation": {
+          "file": "predictions/update_008700/validation.csv",
+          "bytes": 54900,
+          "sha256": "1900481d5cbef83bd2ccd9268dfd2f013e0a45c9828cfccb31b7fdaa8cb17f6a"
+        }
+      },
+      "model_file": "checkpoints/update_008700.pt"
+    },
+    {
+      "id": "update_008800",
+      "update": 8800,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_008800/train.csv",
+          "bytes": 406580,
+          "sha256": "f970311677960fc94047ca37ae418762f000b9c5e6eef22f69ed7b50c0aaf159"
+        },
+        "validation": {
+          "file": "predictions/update_008800/validation.csv",
+          "bytes": 54917,
+          "sha256": "c59e022da1c887c247569d05925e999f4b400dfd03a0ac883641b28fe71e476b"
+        }
+      },
+      "model_file": "checkpoints/update_008800.pt"
+    },
+    {
+      "id": "update_008900",
+      "update": 8900,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_008900/train.csv",
+          "bytes": 406512,
+          "sha256": "2aaf3141a9aeec88d79c8214f817b46bf4782481f18f500af500ff4c1ce84924"
+        },
+        "validation": {
+          "file": "predictions/update_008900/validation.csv",
+          "bytes": 54898,
+          "sha256": "9872133f4c878010a599ed740f56bd9eda21985465630b6a52bf2ebf8d5605e6"
+        }
+      },
+      "model_file": "checkpoints/update_008900.pt"
+    },
+    {
+      "id": "update_009000",
+      "update": 9000,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_009000/train.csv",
+          "bytes": 406385,
+          "sha256": "93d0d509096c807a251478075dd6b33424c2cd09c4d631d97ffb5b4147805b57"
+        },
+        "validation": {
+          "file": "predictions/update_009000/validation.csv",
+          "bytes": 54874,
+          "sha256": "e6bc5d06b7ac89cd5275cbc00604c8da66fbd9527cf2c0c0c278a1fd051cec5a"
+        }
+      },
+      "model_file": "checkpoints/update_009000.pt"
+    },
+    {
+      "id": "update_009100",
+      "update": 9100,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_009100/train.csv",
+          "bytes": 406349,
+          "sha256": "36ef453ce2459c73ae414d55863c20ee00d011dccb73e515ebb8804bf775fe65"
+        },
+        "validation": {
+          "file": "predictions/update_009100/validation.csv",
+          "bytes": 54912,
+          "sha256": "204871dafac9be928f45aaf1feb64065f3fe7dd2579228b9d0b8fa71e902f8e9"
+        }
+      },
+      "model_file": "checkpoints/update_009100.pt"
+    },
+    {
+      "id": "update_009200",
+      "update": 9200,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_009200/train.csv",
+          "bytes": 406500,
+          "sha256": "0fcda0aeef95dd9f8d968345c518d720a2819089101c7f5aa927a9aeb59f2e7a"
+        },
+        "validation": {
+          "file": "predictions/update_009200/validation.csv",
+          "bytes": 54938,
+          "sha256": "eb53826318c1c9951db461bae0fac225eae25b257efc8985bd32e4609157dc64"
+        }
+      },
+      "model_file": "checkpoints/update_009200.pt"
+    },
+    {
+      "id": "update_009300",
+      "update": 9300,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_009300/train.csv",
+          "bytes": 406420,
+          "sha256": "45c8d36d36cb5bde2a528bed5b2da3114d299751dfa80fff6d87d2f9d0979928"
+        },
+        "validation": {
+          "file": "predictions/update_009300/validation.csv",
+          "bytes": 54907,
+          "sha256": "e3471a81b64004f5ac24e012abff0dc3762390bc36c248f337fe79c094f0440e"
+        }
+      },
+      "model_file": "checkpoints/update_009300.pt"
+    },
+    {
+      "id": "update_009400",
+      "update": 9400,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_009400/train.csv",
+          "bytes": 406486,
+          "sha256": "0fbabfdb3fbd6138c22c9653b495689ae2ab7e47763fd50fc3b0a20e13249659"
+        },
+        "validation": {
+          "file": "predictions/update_009400/validation.csv",
+          "bytes": 54880,
+          "sha256": "7e7dd350139b30dcbe9eb58aa4cf5ad8b69ded0603bc526560a0a55c268a4752"
+        }
+      },
+      "model_file": "checkpoints/update_009400.pt"
+    },
+    {
+      "id": "update_009500",
+      "update": 9500,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_009500/train.csv",
+          "bytes": 406425,
+          "sha256": "12c9b14806c8ff24960c333a1e781bbb5f9d9b0f97208f00800261459571f86b"
+        },
+        "validation": {
+          "file": "predictions/update_009500/validation.csv",
+          "bytes": 54837,
+          "sha256": "2f6660033635fd7a1cc53a483fc7f205f9c0bfc31708747f576e789b79dda9e1"
+        }
+      },
+      "model_file": "checkpoints/update_009500.pt"
+    },
+    {
+      "id": "update_009600",
+      "update": 9600,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_009600/train.csv",
+          "bytes": 406494,
+          "sha256": "a13ce5aa943f851f0cf114d22b451cf44575fbfa5c2afb02dfaff93ec5946aff"
+        },
+        "validation": {
+          "file": "predictions/update_009600/validation.csv",
+          "bytes": 54908,
+          "sha256": "cc36f9d9cecde80168fb013164a11889456971b87101adc99edd99af68e9ba7a"
+        }
+      },
+      "model_file": "checkpoints/update_009600.pt"
+    },
+    {
+      "id": "update_009700",
+      "update": 9700,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_009700/train.csv",
+          "bytes": 406458,
+          "sha256": "de4fade03fcb253144b1fd7bd53567287929c694270d65c40e2b49495bd57f1f"
+        },
+        "validation": {
+          "file": "predictions/update_009700/validation.csv",
+          "bytes": 54871,
+          "sha256": "7a98ac600a947f9d7b405e68df8bfc6993ede793cf90e7f577264095067c7026"
+        }
+      },
+      "model_file": "checkpoints/update_009700.pt"
+    },
+    {
+      "id": "update_009800",
+      "update": 9800,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_009800/train.csv",
+          "bytes": 406382,
+          "sha256": "63922d47a56d9ad27bce5694d47a88dd34d504a3b6f2d5b34e6433f37dadd4b4"
+        },
+        "validation": {
+          "file": "predictions/update_009800/validation.csv",
+          "bytes": 54880,
+          "sha256": "5a13a4a7242fd4b4d901767130c35d511d22298b29fd919bc2e26fe4299b53ed"
+        }
+      },
+      "model_file": "checkpoints/update_009800.pt"
+    },
+    {
+      "id": "update_009900",
+      "update": 9900,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_009900/train.csv",
+          "bytes": 406401,
+          "sha256": "a4ec81694bc241fd6cbb99b5a69ac937f1cf0632a72a701bd38b714b45015235"
+        },
+        "validation": {
+          "file": "predictions/update_009900/validation.csv",
+          "bytes": 54872,
+          "sha256": "fddcfa2ac4e241970466eef849788c11b2aa11b4da493c94269be4bede9bbe3e"
+        }
+      },
+      "model_file": "checkpoints/update_009900.pt"
+    },
+    {
+      "id": "update_010000",
+      "update": 10000,
+      "predictions": {
+        "train": {
+          "file": "predictions/update_010000/train.csv",
+          "bytes": 406533,
+          "sha256": "eab5ae12473ebdafe7e1f94da2fc4614dd3cf59147e7f8b6e6c585ec666e4d5e"
+        },
+        "validation": {
+          "file": "predictions/update_010000/validation.csv",
+          "bytes": 54873,
+          "sha256": "9a2804fb39e5971405aea065477c55abc8404ca57cb56daf7717b651d9050afa"
+        }
+      },
+      "model_file": "checkpoints/update_010000.pt"
+    }
+  ],
+  "selected_checkpoint": "update_009700",
+  "termination": {
+    "reason": "MAX_UPDATES",
+    "final_update": 10000,
+    "selected_checkpoint": "update_009700"
+  },
+  "run_config": {
+    "optimizer_name": "adam",
+    "learning_rate": 0.001,
+    "weight_decay": 0,
+    "batch_size": 128,
+    "max_updates": 10000,
+    "loss_name": "mse",
+    "loss_reduction": "mean",
+    "shuffle": true,
+    "drop_last": false,
+    "device": "cpu",
+    "dtype": "float32",
+    "seed": 1006,
+    "stopping_ruler": "intermediate",
+    "target_pass_rate": 0.95,
+    "min_delta": 0.001,
+    "early_eval_updates": [
+      0,
+      10,
+      20,
+      50,
+      100
+    ],
+    "per_row_error_updates": [
+      0,
+      10
+    ],
+    "eval_interval": 100,
+    "lr_reduction_patience_updates": 500,
+    "lr_scheduler_patience": 4,
+    "lr_reduction_factor": 0.5,
+    "lr_min": 1e-05,
+    "lr_cooldown_checks": 0,
+    "breakaway_band_N": 0.2,
+    "tolerances": {
+      "coarse": [
+        0.1,
+        0.1
+      ],
+      "intermediate": [
+        0.01,
+        0.01
+      ],
+      "fine": [
+        0.001,
+        0.001
+      ]
+    },
+    "training_data_dir": "D:\\.physical_ai\\ball_simulation_python\\model_training\\data\\e4\\runs",
+    "checkpoint_subdirectory": "checkpoints",
+    "expected_train_rows": 8000,
+    "expected_validation_rows": 1000,
+    "expected_test_rows": 1000,
+    "scale_epsilon": 1e-08,
+    "near_zero_scale_policy": "replace_with_one",
+    "input_columns": [
+      "v0_m_s",
+      "force_N",
+      "force_duration_s",
+      "observation_time_s"
+    ],
+    "target_columns": [
+      "displacement_m",
+      "v_final_m_s"
+    ]
+  },
+  "normalization": {
+    "input_mean": [
+      0.07762007816764774,
+      0.07095007081426523,
+      0.5518841754239008,
+      1.4723390304619697
+    ],
+    "input_scale": [
+      5.0636079749029586,
+      9.956749772194973,
+      0.25939431612678604,
+      0.6838997580823271
+    ],
+    "target_mean": [
+      0.14432556371104643,
+      0.09237969228845916
+    ],
+    "target_scale": [
+      7.800004215316707,
+      4.786902448418081
+    ]
+  },
+  "model_config": {
+    "widths": [
+      4,
+      32,
+      32,
+      32,
+      2
+    ],
+    "activation": "ReLU"
+  }
+}
