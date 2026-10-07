@@ -1,0 +1,9 @@
+The calculation of MSE is giving both v and d weights, which are their deviations. This might not reveal the model's true capacity. 
+
+So in this test, I will directly use passing rate criteria to evaluate the results from E4, training stage 1. 
+
+The results from E4, training stage 1 will be the baseline of the second stage. In addition, I will adjust the training methods for improving the motion regime that currently shows the worst passing rate.
+
+
+
+	

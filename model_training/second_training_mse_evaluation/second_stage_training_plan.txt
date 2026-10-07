@@ -1,0 +1,240 @@
+SECOND-STAGE TRAINING PLAN: E4 PHYSICAL ACCURACY
+
+Objective and evidence
+
+Improve moving_at_observation accuracy while protecting the other regimes.
+A sample passes only when BOTH |d error| < 0.01 m and |v error| < 0.01 m/s.
+Keep standardized MSE for continuity, but do not select models by MSE alone.
+All experiments below are proposals; their gains have not yet been measured.
+
+Sources: e4_validation_table.md, e4_validation_key_updates.md, evaluate_e4.py,
+and ../data/e4/runs/seed_*/datasets and predictions/update_010000 CSV files.
+E4 uses 4 -> 32 -> 32 -> 32 -> 2, ReLU, Adam, batch size 128,
+8,000 training rows, 1,000 validation rows and 10,000 updates.
+
+At update 10,000, pooled rates across the five E4 seeds are:
+Group                    d pass     v pass     joint pass
+Overall                   2.340%     4.080%       0.140%
+Always resting            2.812%     6.250%       0.625%
+Moved then stopped        2.830%     4.412%       0.192%
+Moving at observation     1.888%     3.545%       0.039%
+
+Rates equal seed averages because split sizes are identical. There is only
+one moving joint success across 2,595 seed/example predictions. These are
+repeated predictions on 519 physical examples, not 2,595 independent cases.
+Validation contains 64 resting, 417 stopped and 519 moving examples.
+Breakaway (102 validation examples) overlaps these regimes; do not count it
+as a fourth disjoint group. Its current definition is v0 = 0 and
+abs(abs(force_N) - 3.924) <= 0.2 N.
+
+Moving examples already comprise 4,118/8,000 = 51.475% of training data.
+Their pooled training/validation median absolute errors are:
+                         Training        Validation
+Displacement             0.2579 m        0.2587 m
+Velocity                 0.1655 m/s      0.1645 m/s
+Joint pass               0.078%          0.039%
+Moving validation p90 errors are 0.7321 m and 0.4159 m/s.
+Medians and p90 values pool errors across seeds; they are not seed-mean medians.
+Similar training and validation errors make optimization, objective weighting
+and model capacity priorities. More moving data alone is not yet justified.
+All regimes have poor absolute accuracy, even though moving has the lowest
+joint pass rate.
+
+Initial moving subdivisions, also pooled over seeds:
+- During force (observation_time <= force_duration): 98 validation examples;
+  median d error 0.2189 m; d/v/joint pass 2.041% / 5.102% / 0.000%.
+- After force: 421 examples; median d error 0.2744 m;
+  d/v/joint pass 1.853% / 3.183% / 0.048%.
+- Low final speed, 0 < |v_final| <= 1 m/s: 92 examples;
+  median v error 0.1823 m/s; velocity pass 2.174%.
+The low-speed subset overlaps the phase subsets. These observations motivate
+local coverage checks, but do not prove errors occur at physical boundaries.
+
+Shared controls and evaluation
+
+Screen with paired seeds 42, 1006 and 10086. Confirm the selected candidate and
+its matched control with 104792 and 230786. Report individual seeds, mean and
+sample standard deviation, comparing the same seed subset at each stage.
+Freeze validation and the original split. Fit normalization on original
+training data only and reuse it across width/data arms. Keep physics unchanged.
+Use batch size 128 and 10,000 updates for from-scratch screening; evaluate every
+100 updates plus the existing early checks. Disable success-based early exit
+for fixed-budget comparisons. Record actual updates, examples processed,
+learning rates, parameters and wall time.
+
+Save train/validation predictions. Report d, v and joint pass rates, physical
+MAE/RMSE, median/p90 errors and standardized MSE by regime; retain breakaway
+diagnostics. Report both update 10,000 and a selected checkpoint. Select the
+latter by highest moving joint pass subject to the safeguards below, breaking
+ties by lower moving tolerance-normalized squared error, then lower overall
+tolerance-normalized squared error. Also retain the MSE-best checkpoint.
+Never use test results to tune widths, sampling or checkpoints. Since validation
+guides this plan, final confirmation requires an untouched test split or a new
+independent held-out set if the existing test has already influenced decisions.
+
+1. Learning-rate comparison: isolate optimization
+
+Keep E4 architecture, original data and standardized MSE loss.
+E4-1: archived original E4 baseline.
+E4-2: controlled rerun with the original scheduler.
+E4-3: constant LR 0.001.
+E4-4: scheduler with relative threshold 0.001 and unchanged patience.
+For E4-2/E4-4 use initial LR 0.001, factor 0.5, patience 4 scheduler checks,
+minimum LR 0.00001 and checks every 100 updates. The original scheduler uses
+ABSOLUTE threshold 0.001. At MSE around 0.0025, this demands a large improvement
+to reset patience; premature LR decay is therefore a plausible hypothesis.
+Match initialization and batch order within each seed. Select one schedule
+using physical metrics and the safeguards below, then freeze it for steps 4/5.
+
+2. Controlled fine-tuning: test output weighting
+
+Define ed = (predicted_d - true_d)/0.01 m and
+ev = (predicted_v - true_v)/0.01 m/s.
+Proposed loss: mean((ed^2 + ev^2)/2). Undo target standardization inside the
+differentiable loss. Multiplying standardized MSE by a constant is not equivalent.
+For each seed, branch from the same step-1 checkpoint:
+L0: continue standardized MSE; L1: switch to the tolerance-based loss.
+Both reset Adam, use constant LR 0.0001 and receive 2,000 additional updates,
+with identical data order and evaluation every 100 updates. Log gradient norms
+and nonfinite losses because the loss scale changes. If unstable, make a
+separate matched lower-LR comparison, not an undocumented adjustment to one arm.
+Keep this experiment separate from the width/data matrix. Apply a validated
+loss change to its winner later, with an equal-budget continuation control.
+
+3. Representation changes if schedule/width/data are insufficient
+
+Test one feature family at a time:
+- t_on = min(observation_time, force_duration),
+  t_off = max(observation_time - force_duration, 0).
+- In a separate arm, add v0*t_on, force*t_on and force*t_on^2.
+These features are available from inputs at inference; normalize on training.
+Do not use true final velocity, true motion_group or simulator-derived true
+stopping time as production inputs. If errors persist around transitions,
+test a learned regime classifier with regression heads as a separate model.
+Training labels may supervise routing, but inference must use predicted routing;
+include routing mistakes when evaluating the full pipeline.
+
+4. Concrete width experiment: keep three hidden layers
+
+Question: can extra capacity reduce errors already present on training rows?
+W32:  4 -> 32  -> 32  -> 32  -> 2   (2,338 parameters).
+W64:  4 -> 64  -> 64  -> 64  -> 2   (8,770 parameters).
+W128: 4 -> 128 -> 128 -> 128 -> 2   (33,922 parameters).
+Train from scratch on the same original 8,000 rows with ReLU, Adam,
+standardized MSE and the schedule selected in step 1. Change only width.
+Use paired seeds and identical data ordering where possible; different widths
+cannot share identical initial weight tensors. Report runtime with accuracy.
+This isolates width at fixed depth; it does not prove width beats all deeper
+architectures without a separate depth comparison.
+
+Decision:
+- Training and validation moving errors both improve: carry the winning wider
+  model into step 5. Prefer W64 if W128 adds no consistent physical gain.
+- Training improves but validation stalls: prioritize coverage/generalization.
+- Neither improves: revisit optimization, loss and features before scaling up.
+Do not select width using one seed or one transient pass-rate spike.
+
+5. Concrete coverage experiment combined with the width experiment
+
+First locate errors within moving cases using ORIGINAL TRAINING predictions.
+Report counts, median/p90 errors and output-specific pass rates for:
+- During force versus after force, as defined above.
+- |v_final| bins: (0, 0.1], (0.1, 1], (1, 5], >5 m/s.
+- Force/v0 direction: same sign, opposite sign, or v0 = 0.
+- Observation-time and force-magnitude quartiles, with edges from training.
+Start with individual dimensions to avoid sparse crossed bins. Use validation
+to check broad patterns, not as a source of examples to copy or perturb.
+Almost every row fails 0.01 tolerances, so a binary failure flag is not useful
+for mining. Rank training difficulty with
+h = max(|d error|/0.01 m, |v error|/0.01 m/s), averaged across the three screening
+seeds, and inspect each output separately.
+
+Build three fixed datasets, shared across seeds and widths:
+D0: original 8,000 examples.
+DU: D0 plus 8,000 fresh examples from the original sampling distribution.
+DT: D0 plus 8,000 fresh targeted examples:
+    4,800 moving after force;
+    1,600 moving during force;
+    1,000 moved then stopped;
+      600 always resting.
+These are proposed experimental quotas, not proven optimal proportions.
+The 75:25 split of new moving cases preserves emphasis on after-force errors
+while increasing during-force coverage relative to the observed 421:98 split.
+
+Within the 6,400 added moving rows, target 1,600 with 0 < |v_final| <= 1 m/s,
+spread across the phase quotas where feasible. This is an overlapping quota,
+not 1,600 extra rows. Reserve half of each moving phase quota for broad sampling;
+use the other half for high-error training bins containing at least 50 original
+rows. Freeze bin allocations before generation. If a bin is infeasible, record
+the shortfall and redistribute inside its phase quota without expanding the
+physical domain. Include stopped-side boundary cases and both force signs near
+the static threshold in the stopped/resting additions where physically valid.
+Use the simulator to identify stopping/reversal boundaries rather than assuming
+a simple stopping-time formula applies through velocity reversals.
+
+Generate valid fresh inputs inside original ranges and recompute labels using
+the original simulator. Use fixed generation seeds; exclude exact duplicates
+within added data and against held-out inputs. Record accepted counts, hashes
+and generation settings. Simulator labels can guide training quotas, but cannot
+become features unavailable at inference.
+
+Core matrix, with three screening seeds per arm:
+             D0 original     DU random expansion     DT targeted expansion
+W32          A               B                       C
+W*           D               E                       F
+W* is the selected wider network from step 4. If neither wider model wins,
+use W64 for this interaction test and explicitly record that width did not win.
+Reuse completed D0 runs only when configuration, seeds and budget match exactly.
+
+Comparisons:
+D versus A: width alone.
+B versus A: random data expansion.
+C versus B: targeting at equal dataset size.
+F versus E: targeting with the wider model.
+F versus C: width with targeted data.
+(F-E) versus (C-B): whether width changes the benefit of targeting.
+F versus A: total gain, which alone cannot identify the cause.
+
+Sample uniformly within each dataset. Do not also add regime loss weights or
+a special sampler in this matrix. Every arm initially gets 10,000 updates and
+batch size 128. Expanded data receive fewer passes per example. If their errors
+are still falling, run a separately labeled 20,000-update comparison for A-F
+with the same schedule configuration, reporting both budgets and runtime.
+Do not compare an extended candidate only against a shorter-budget control.
+
+Optional cheap diagnostic before generation: keep D0 and sample 70% moving,
+25% stopped and 5% resting per batch in expectation. Compare with uniform D0
+sampling at matched width, LR and update budget. This tests allocation of
+updates, not new physical coverage; keep it separate from the main matrix.
+
+6. Screening gates and execution order
+
+Proposed gates, fixed before new runs:
+- Moving joint pass improves in at least 2/3 paired seeds.
+- Mean moving joint pass gains at least 1 percentage point and moving median
+  d and v errors both fall by at least 20% relative to the matched control.
+- Overall joint pass does not fall. Resting/stopped joint pass each lose no
+  more than 1 percentage point; each regime's d/v MAE and p90 rise by no more
+  than 10%. Report raw counts: one of 64 resting examples is 1.5625 points.
+These are engineering screening gates, not significance tests or promised gains.
+Continuous-error improvement without passing the joint gate is intermediate
+progress. Retain the existing 95% joint-pass objective as the long-term target,
+reported for moving and overall separately.
+
+Execution order:
+1) Verify units/row alignment and establish matched baseline metrics.
+2) Finish the LR comparison and freeze the chosen schedule.
+3) Run W32/W64/W128 on D0 and the separate loss pilot.
+4) Freeze training-error bins, generate DU/DT and complete the width/data matrix.
+5) Apply any validated tolerance fine-tuning to the matrix winner with a matched
+   standardized-loss continuation control.
+6) If gains stall, test the input feature families separately.
+7) Confirm candidate and control on the remaining two seeds; report all five.
+   Evaluate the frozen choice once on untouched test data. Any uncertainty
+   calculation must respect repeated predictions on shared physical examples,
+   rather than treating all seed/example pairs as independent observations.
+
+Deliverables: configurations, data hashes, LR histories, runtime/parameter
+counts, training/validation curves, per-row errors, regime/bin metrics, and
+both final-update and selected-checkpoint summaries. Clearly distinguish new
+measurements from the hypotheses and proposed quotas in this document.

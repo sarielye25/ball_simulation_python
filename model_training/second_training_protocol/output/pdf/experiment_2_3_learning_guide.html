@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>第二阶段实验 2 与 3：损失函数与物理表示</title>
+  <style>
+    :root { --ink:#1d2b3c; --muted:#526679; --blue:#155e83; --pale:#eaf4f8; --line:#d7e2e9; --gold:#bd7b1c; }
+    * { box-sizing:border-box; }
+    body { margin:0; color:var(--ink); background:#edf2f5; font:15px/1.72 "Microsoft YaHei", "SimHei", sans-serif; }
+    main { width:min(920px,100%); margin:32px auto; padding:42px 56px 52px; background:white; box-shadow:0 8px 28px #1b34451a; }
+    header { border-bottom:3px solid var(--blue); padding-bottom:21px; margin-bottom:29px; }
+    .eyebrow { color:var(--blue); font-size:12px; font-weight:700; letter-spacing:.15em; }
+    h1 { font-size:30px; line-height:1.32; margin:8px 0 12px; }
+    h2 { font-size:22px; line-height:1.35; color:var(--blue); border-bottom:1px solid var(--line); padding-bottom:7px; margin:34px 0 15px; }
+    h3 { font-size:17px; margin:23px 0 8px; }
+    p { margin:9px 0; }
+    ul, ol { margin:8px 0 13px; padding-left:1.5em; }
+    li { margin:5px 0; }
+    .lead { color:var(--muted); font-size:16px; }
+    .box { background:var(--pale); border-left:4px solid var(--blue); padding:13px 17px; margin:17px 0; }
+    .warn { background:#fff8eb; border-left-color:var(--gold); }
+    .formula { font-family:"Cambria Math", "Times New Roman", "Microsoft YaHei", serif; font-size:17px; line-height:1.65; background:#f6f8fa; border:1px solid var(--line); border-radius:6px; padding:12px 16px; margin:13px 0; overflow-wrap:anywhere; }
+    .formula small { display:block; color:var(--muted); font:12px/1.5 "Microsoft YaHei",sans-serif; margin-top:5px; }
+    table { width:100%; border-collapse:collapse; margin:14px 0 18px; font-size:13px; }
+    th, td { border:1px solid var(--line); padding:8px 10px; text-align:left; vertical-align:top; }
+    th { background:var(--pale); }
+    .caption { font-size:12px; color:var(--muted); }
+    .tag { display:inline-block; background:#dceef5; color:var(--blue); border-radius:3px; padding:1px 8px; font-size:12px; font-weight:700; }
+    .page-break { break-before:page; }
+    .keep { break-inside:avoid; }
+    footer { border-top:1px solid var(--line); margin-top:35px; padding-top:12px; color:var(--muted); font-size:11px; }
+    @page { size:A4; margin:16mm 16mm 17mm; }
+    @media print {
+      body { background:white; font-size:11pt; line-height:1.58; }
+      main { width:auto; margin:0; padding:0; box-shadow:none; }
+      .page-break { display:none; }
+      h1 { font-size:23pt; } h2 { font-size:17pt; } h3 { font-size:13pt; }
+      .formula { font-size:13pt; }
+      table { font-size:9.5pt; }
+      h2, h3, .box, .formula, tr { break-inside:avoid; }
+      h2, h3 { break-after:avoid; }
+    }
+  </style>
+</head>
+<body><main>
+  <header>
+    <div class="eyebrow">第二阶段训练 · 学习讲义</div>
+    <h1>实验 2 与实验 3<br>损失函数、物理容差与运动表示</h1>
+    <p class="lead">先把学习目标说清楚，再测试模型是否需要更好的物理输入。本文把项目当前做法、建议的对照实验，以及容易误判的地方分开说明。</p>
+  </header>
+
+  <div class="box"><strong>阅读路线：</strong>实验 2 回答“模型正在优化的数值，是否符合我想要的物理精度？”实验 3 回答“即使训练目标合理，输入是否仍然没有清楚表达分段的运动规律？”两项可以在同一阶段准备，但比较时仍应固定其他条件、一次只改一个因素。</div>
+
+  <h2>0. 先认识项目中的两个输出</h2>
+  <p>对第 <em>i</em> 条样本，模型输入是初速度 <em>v<sub>0</sub></em>、外力 <em>F</em>、施力时长 <em>t<sub>1</sub></em>、观察时间 <em>t</em>；目标是位移 <em>d<sub>i</sub></em>（米）和最终速度 <em>v<sub>i</sub></em>（米/秒）。模型预测分别记为 <em>d̂<sub>i</sub></em>、<em>v̂<sub>i</sub></em>。每批有 <em>B</em> 条样本。</p>
+  <p>现有网络是 <strong>4 → 32 → 32 → 32 → 2</strong>。训练时，两个目标先按训练集统计量标准化，再用 PyTorch 的 <code>MSELoss(reduction="mean")</code> 计算损失。项目在评估时又把预测转回物理单位，计算物理误差和容差通过率。</p>
+
+  <h2>1. 实验 2：MSE 到底在算什么？</h2>
+  <h3>1.1 最基本的 MSE</h3>
+  <p>均方误差（Mean Squared Error）是“每个误差先平方，再求平均”。如果只预测位移，物理单位下的公式是：</p>
+  <div class="formula">MSE<sub>d</sub> = (1/B) × Σ<sub>i=1…B</sub> (d̂<sub>i</sub> − d<sub>i</sub>)² <small>单位是 m²；平方让较大的误差受到更重惩罚。</small></div>
+  <p>速度的 MSE 同理，但单位是 (m/s)²。直接把这两个数相加会混合不同单位，也隐含了未经说明的权重。因此当前项目先把两个目标分别标准化。</p>
+
+  <h3>1.2 训练集标准化与当前损失的完整公式</h3>
+  <p>令 <em>μ<sub>d</sub>, σ<sub>d</sub></em> 分别为<strong>训练集</strong>位移的均值和标准差；速度对应 <em>μ<sub>v</sub>, σ<sub>v</sub></em>。目标和预测使用同一套训练集参数：</p>
+  <div class="formula">z<sub>d,i</sub> = (d<sub>i</sub> − μ<sub>d</sub>)/σ<sub>d</sub>，&nbsp; ẑ<sub>d,i</sub> = (d̂<sub>i</sub> − μ<sub>d</sub>)/σ<sub>d</sub><br>z<sub>v,i</sub> = (v<sub>i</sub> − μ<sub>v</sub>)/σ<sub>v</sub>，&nbsp; ẑ<sub>v,i</sub> = (v̂<sub>i</sub> − μ<sub>v</sub>)/σ<sub>v</sub></div>
+  <div class="formula"><strong>L<sub>std</sub> = (1/2B) × Σ<sub>i=1…B</sub> [ (ẑ<sub>d,i</sub> − z<sub>d,i</sub>)² + (ẑ<sub>v,i</sub> − z<sub>v,i</sub>)² ]</strong><br>= (1/2B) × Σ<sub>i=1…B</sub> [ ((d̂<sub>i</sub> − d<sub>i</sub>)/σ<sub>d</sub>)² + ((v̂<sub>i</sub> − v<sub>i</sub>)/σ<sub>v</sub>)² ]<small>分母为 2B，是因为一次平均覆盖 B 条样本 × 2 个输出。均值 μ 在“预测 − 真实”时抵消。</small></div>
+  <p>这意味着当前损失在物理单位下的相对权重是 <strong>1/σ<sub>d</sub>²</strong> 与 <strong>1/σ<sub>v</sub>²</strong>。它让“相对于训练集典型波动”的误差可比，但不保证符合你的精度要求。</p>
+
+  <div class="page-break"></div>
+  <h2>2. 什么是这里的“物理容差”？</h2>
+  <p>容差 <em>τ</em> 是你允许预测与真实答案相差多少的<strong>物理单位门槛</strong>。它不是训练集标准差，也不是 MSE；标准差来自数据分布，容差来自任务要求。</p>
+  <table>
+    <thead><tr><th>项目现有档位</th><th>位移容差 τ<sub>d</sub></th><th>速度容差 τ<sub>v</sub></th><th>含义</th></tr></thead>
+    <tbody>
+      <tr><td>coarse</td><td>0.1 m</td><td>0.1 m/s</td><td>较宽松</td></tr>
+      <tr><td>intermediate</td><td>0.01 m</td><td>0.01 m/s</td><td>当前停止判据选用的档位</td></tr>
+      <tr><td>fine</td><td>0.001 m</td><td>0.001 m/s</td><td>更严格</td></tr>
+    </tbody>
+  </table>
+  <p>当前评估代码认为一条样本通过某档位，当且仅当两个误差<strong>同时严格小于</strong>各自的容差：</p>
+  <div class="formula">pass<sub>i</sub> = 1{ |d̂<sub>i</sub> − d<sub>i</sub>| &lt; τ<sub>d</sub> 且 |v̂<sub>i</sub> − v<sub>i</sub>| &lt; τ<sub>v</sub> }<br>通过率 = (1/N) × Σ<sub>i=1…N</sub> pass<sub>i</sub><small>例如位移误差 0.008 m、速度误差 0.012 m：在 intermediate 档位不通过，因为速度超出了 0.01 m/s。</small></div>
+  <p><strong>关键区别：</strong>这个通过率是评估指标，0 或 1 的跳变不适合直接作为常规梯度训练损失。实验 2 是用容差构造一个<strong>平滑、可求导的损失</strong>，引导模型提高容差通过率。</p>
+
+  <h3>2.1 一个容差归一化的 MSE</h3>
+  <p>定义两种无量纲误差：<em>r<sub>d,i</sub> = (d̂<sub>i</sub> − d<sub>i</sub>)/τ<sub>d</sub></em>，<em>r<sub>v,i</sub> = (v̂<sub>i</sub> − v<sub>i</sub>)/τ<sub>v</sub></em>。绝对值为 1 表示恰好到达容差边界。</p>
+  <div class="formula"><strong>L<sub>tol</sub> = (1/2B) × Σ<sub>i=1…B</sub> [ ((d̂<sub>i</sub> − d<sub>i</sub>)/τ<sub>d</sub>)² + ((v̂<sub>i</sub> − v<sub>i</sub>)/τ<sub>v</sub>)² ]</strong><small>这里的 1/2B 与当前 MSE 的平均方式一致；若用 1/B，优化方向相同，但数值与梯度会整体放大两倍。</small></div>
+  <p>以 intermediate 容差为例，位移误差 0.02 m 对应 <em>r<sub>d</sub>=2</em>、平方贡献 4；速度误差 0.005 m/s 对应 <em>r<sub>v</sub>=0.5</em>、平方贡献 0.25。损失会更关注前者，因为它超过了目标容差。</p>
+
+  <h3>2.2 为什么两种 MSE 可能给出不同方向？</h3>
+  <p>假设仅为演示，训练集的 <em>σ<sub>d</sub>=2 m</em>、<em>σ<sub>v</sub>=0.5 m/s</em>；某样本的位移误差为 0.02 m、速度误差为 0.01 m/s；两项容差都是 0.01（各自有单位）。</p>
+  <table>
+    <thead><tr><th>方法</th><th>位移平方项</th><th>速度平方项</th><th>这一行的平均损失</th></tr></thead>
+    <tbody>
+      <tr><td>当前标准化 MSE</td><td>(0.02/2)² = 0.0001</td><td>(0.01/0.5)² = 0.0004</td><td>0.00025</td></tr>
+      <tr><td>容差归一化 MSE</td><td>(0.02/0.01)² = 4</td><td>(0.01/0.01)² = 1</td><td>2.5</td></tr>
+    </tbody>
+  </table>
+  <p class="caption">这些标准差是假设值，不代表项目真实数据。两种损失的绝对数值不能直接比较；要比较它们训练出的模型在同一验证集上的表现。</p>
+  <p>在这个例子里，标准化 MSE 更重视速度项；容差 MSE 更重视位移项。这正是实验 2 要检验的“输出权重是否限制实用精度”。</p>
+
+  <div class="page-break"></div>
+  <h2>3. 容差损失如何在现有标准化模型上计算？</h2>
+  <p>网络输出仍然是标准化预测，不需要为了换损失而重写输出层。因为 <em>d̂ − d = σ<sub>d</sub>(ẑ<sub>d</sub> − z<sub>d</sub>)</em>，速度亦然，所以：</p>
+  <div class="formula">L<sub>tol</sub> = (1/2B) × Σ<sub>i=1…B</sub> [ w<sub>d</sub>(ẑ<sub>d,i</sub> − z<sub>d,i</sub>)² + w<sub>v</sub>(ẑ<sub>v,i</sub> − z<sub>v,i</sub>)² ]<br>w<sub>d</sub> = (σ<sub>d</sub>/τ<sub>d</sub>)²，&nbsp; w<sub>v</sub> = (σ<sub>v</sub>/τ<sub>v</sub>)²</div>
+  <p>这与先反标准化再计算完全等价（浮点舍入误差除外）。若权重很大，原封不动沿用旧学习率可能使梯度尺度发生巨大变化。为了主要考察<strong>两个输出的相对权重</strong>，可以把两个权重同时除以它们的平均值：</p>
+  <div class="formula">w̄ = (w<sub>d</sub> + w<sub>v</sub>)/2；&nbsp; w̃<sub>d</sub> = w<sub>d</sub>/w̄，&nbsp; w̃<sub>v</sub> = w<sub>v</sub>/w̄<br>L<sub>weighted</sub> = (1/2B) × Σ [ w̃<sub>d</sub>Δz<sub>d,i</sub>² + w̃<sub>v</sub>Δz<sub>v,i</sub>² ]<small>共同缩放不改变两项的相对偏重，但会改变损失数值和梯度量级。因此要明确记录采用的是原始容差损失还是归一化权重版本。</small></div>
+  <div class="box warn"><strong>一个重要边界：</strong>平方损失并不直接等于“最大化通过率”。两条模型可能有相近的容差 MSE，却因错误分布不同而有不同的通过率。因此必须同时报告总体通过率、位移与速度的分项误差，以及高分位误差。</div>
+
+  <h3>3.1 可解释的对照设计</h3>
+  <ol>
+    <li>先完成实验 1，选定学习率策略；对每个种子保留<strong>同一个</strong>起始检查点。</li>
+    <li>从该检查点复制两份。A 组继续用标准化 MSE；B 组用容差加权 MSE。两组都额外训练同样数量的更新。</li>
+    <li>两组使用相同训练集、批次顺序、微调学习率策略和模型结构。优化器状态要统一处理：要么两组都重置，要么两组都按同样规则恢复，并在记录中写清楚。</li>
+    <li>在原验证集上用<strong>同一套评价代码</strong>比较。至少看总体标准化 MSE、位移/速度 MAE、95 分位误差、intermediate 通过率及各运动组通过率。</li>
+    <li>跨三个种子报告均值和逐种子结果。只凭一次运行或只看训练损失，无法判断结论是否稳定。</li>
+  </ol>
+  <p>若 B 组的目标通过率提升，但其他关键指标明显恶化，应说明权衡，不能简单宣布它“更准确”。若两组表现几乎相同，可能说明输出权重不是当前主要瓶颈。</p>
+
+  <h2>4. 实验 3：什么叫“改变表示”？</h2>
+  <p>现有网络只看到四个原始输入，需要自己从中学会：施力阶段与撤力阶段的区别、静摩擦阈值、停止时刻，以及不同运动状态之间的切换。对于 ReLU 网络，这些关系可能很难在数据有限时学准，尤其在分界附近。</p>
+  <div class="box"><strong>表示的意思：</strong>不是改变正确答案，而是改变模型看到输入的方式，或改变预测结构，使重要的物理关系更容易表达。</div>
+
+  <div class="page-break"></div>
+  <h2>5. 实验 3A：先试简单的物理特征</h2>
+  <p>保留原始四输入，再追加<strong>只由输入与已知物理常数计算</strong>的特征。下表列的是候选项，不建议第一次就全部加入。</p>
+  <table>
+    <thead><tr><th>候选特征</th><th>公式</th><th>想帮助模型识别什么</th><th>注意</th></tr></thead>
+    <tbody>
+      <tr><td>撤力后时长</td><td>Δt = t − t<sub>1</sub></td><td>撤力后摩擦还有多久使物体减速</td><td>与原输入有冗余，但把关键组合直接给出</td></tr>
+      <tr><td>相对静摩擦阈值</td><td>q = |F| − μ<sub>s</sub>mg</td><td>从静止开始时能否突破静摩擦</td><td>项目物理参数对应阈值约 3.924 N；符号有意义</td></tr>
+      <tr><td>施力冲量</td><td>J = Ft<sub>1</sub></td><td>外力的大小与持续时间共同影响速度</td><td>只是物理启发，不是完整的最终速度公式</td></tr>
+    </tbody>
+  </table>
+  <p>第一轮可以只加 <em>Δt</em>；第二轮再单独测试 <em>q</em>。若想比较“一个特征组合”，应在单项效果看清后再组合。每次改变输入维数时，首层权重矩阵也会变，参数量略有变化；要记录这一点，必要时用参数量相近的对照网络复核。</p>
+  <p>新增特征的均值与标准差必须只在<strong>训练集</strong>拟合；验证和部署使用相同变换。绝不能用真实最终速度、真实位移、或依据答案计算出的运动组，来生成预测时的特征。</p>
+
+  <h3>5.1 如何判定特征有帮助？</h3>
+  <p>使用实验 1 和实验 2 确定的同一训练方法、相同原始数据划分、相同更新预算与种子。比较原始四输入模型与“原始四输入＋一个特征”的验证指标，并特别看新增特征针对的区域：例如 <em>q≈0</em> 的静摩擦分界，或较长的撤力后时段。</p>
+  <p>如果总体改善很小，但边界区域明显改善，特征仍可能有价值；反过来，总体改善却让边界更差，也要如实记录。</p>
+
+  <h2>6. 实验 3B：何时考虑分状态或混合模型？</h2>
+  <p>如果简单物理特征后，错误仍集中在“始终静止”“移动后停止”“观察时仍在移动”的状态切换，可以考虑更复杂的结构。</p>
+  <p>一种方案是<strong>门控多专家模型</strong>：多个子网络各自预测，门控网络根据输入决定混合权重。最终预测可写为：</p>
+  <div class="formula">ŷ(x) = Σ<sub>k=1…K</sub> p<sub>k</sub>(x) · f<sub>k</sub>(x)，&nbsp; Σ<sub>k</sub> p<sub>k</sub>(x)=1<small>x 只能包含推理时可得到的输入；p 是门控权重，f 是各子模型的预测。</small></div>
+  <p>另一种方案是<strong>解析物理规则＋学习残差</strong>：先用已知物理公式给出基准预测，再让网络学习剩余误差。但如果标签本来就由完全相同的精确公式生成，直接使用公式可能已足够；这时“混合模型更好”并不能证明网络表示更强，应先明确研究目的。</p>
+  <div class="box warn"><strong>最容易造成假提升的错误：</strong>用真实最终速度是否为零来决定选哪个子模型。这等于先看答案再预测。若要分状态，选择器必须仅依据 <em>v<sub>0</sub>, F, t<sub>1</sub>, t</em> 及其可计算特征工作。</div>
+
+  <div class="page-break"></div>
+  <h2>7. 两项实验的推荐执行顺序</h2>
+  <table>
+    <thead><tr><th>阶段</th><th>固定什么</th><th>只改变什么</th><th>要回答的问题</th></tr></thead>
+    <tbody>
+      <tr><td>实验 1 完成后</td><td>数据、网络、评价方式</td><td>学习率策略</td><td>平台期是否来自过早降学习率？</td></tr>
+      <tr><td>实验 2</td><td>选定的学习率、输入、结构与起点</td><td>微调损失的两输出相对权重</td><td>原 MSE 的权重是否妨碍达到物理容差？</td></tr>
+      <tr><td>实验 3A</td><td>选定的训练方法、宽度与数据</td><td>一个物理输入特征</td><td>更明确的输入是否改善对应区域？</td></tr>
+      <tr><td>实验 3B（若需要）</td><td>训练预算、数据、评价方式</td><td>分状态或混合结构</td><td>单个网络是否难以表示状态切换？</td></tr>
+      <tr><td>之后的实验 4</td><td>前面选定的方法和特征</td><td>隐藏层宽度，例如 32 → 64</td><td>更宽的网络是否进一步改善？</td></tr>
+    </tbody>
+  </table>
+  <p>这里的“选定”应基于预先确定的验证指标，测试集留到最终方案确定后再使用。若实验 2 与 3 同时改变损失和输入，即使成绩提高，也无法知道是哪一项起作用。</p>
+
+  <h2>8. 做完后应能说出的结论</h2>
+  <ul>
+    <li><strong>实验 2：</strong>“在相同起点与训练预算下，容差加权微调让 intermediate 通过率从 A 提升到 B（或没有稳定提升），位移与速度误差分别如何变化。”</li>
+    <li><strong>实验 3：</strong>“在固定损失和学习率时，加入某个具体物理特征改善了哪些运动区域；若尝试混合模型，它是否在相同预算下进一步改善。”</li>
+  </ul>
+  <footer>依据当前项目的 second_stage_training_plan.txt、training_scripts/config.py、training_scripts/training_loop.py、training_scripts/metrics.py 与 training_scripts/neural_network.py 整理。文中演示标准差为假设值；实验结果须以实际运行记录为准。</footer>
+</main></body></html>
