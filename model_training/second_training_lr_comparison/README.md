@@ -19,3 +19,11 @@ Run with the project virtual environment:
 ```
 
 Use `--group e4_4` and/or `--seed 42` to run a subset. `--max-updates 1` creates separate diagnostic runs. The evaluator writes `lr_comparison_validation.md` from completed runs and saved validation predictions; it can be rerun as more seeds finish.
+
+To keep only updates 0, 10, 50, 100, 1000, 2000, 5000, and 10000 in a shorter report, run:
+
+```powershell
+python screen_lr_comparison_validation.py
+```
+
+This writes `lr_comparison_validation_screened.md` and leaves the full report intact. Rerun it after regenerating the full report.
