@@ -1,5 +1,0 @@
-Use E4's neural network structure; compare the current scheduler, constant LR 0.001, and a scheduler with relative threshold 0.001 and unchanged patience.	
-Question: Whether premature LR decay causes the plateau?
-
-This should be a controlled experiment based on E4's script. Ill call them E4-2, E4-3 and E4-4, with the original E4 being E4-1. In the comparison training of the three new groups, i would use three seeds for each and calculate the average general mse for comparison.
-	
